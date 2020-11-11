@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 @ExtendWith(MockitoExtension::class)
-class CommunityServiceTest {
+class CommunityServiceTests {
     @Test
     fun `Should create a new Community`() {
         TODO()

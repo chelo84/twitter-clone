@@ -14,16 +14,14 @@ class JWTCustomVerifier {
 
     fun check(token: String): Mono<SignedJWT> {
         return Mono.justOrEmpty(createJWS(token))
-                .filter(isNotExpired)
-                .filter(validSignature)
+                .filter(::isNotExpired)
+                .filter(::validSignature)
     }
 
-    private val isNotExpired: (SignedJWT) -> Boolean = {
-        getExpirationDate(it)!!.after(Date.from(Instant.now()))
-    }
+    private fun isNotExpired(token: SignedJWT): Boolean = getExpirationDate(token)!!.after(Date.from(Instant.now()))
 
-    private val validSignature: (SignedJWT) -> Boolean = { token ->
-        try {
+    private fun validSignature(token: SignedJWT): Boolean {
+        return try {
             token.verify(jwsVerifier)
         } catch (e: JOSEException) {
             e.printStackTrace()

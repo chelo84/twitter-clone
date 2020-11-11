@@ -1,5 +1,6 @@
 package com.example.oauthdemo.security.jwt
 
+import com.example.oauthdemo.config.Log
 import com.nimbusds.jose.JOSEException
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
@@ -10,7 +11,7 @@ import java.time.Period
 import java.util.*
 import java.util.stream.Collectors
 
-object JWTTokenService {
+object JWTTokenService : Log() {
     /**
      * Create and sign a JWT object using information from the current
      * authenticated principal
@@ -20,11 +21,19 @@ object JWTTokenService {
      * @param authorities A collection of granted authorities for this principal
      * @return String representing a valid token
      */
-    fun generateToken(subject: String?, credentials: Any?, authorities: Collection<GrantedAuthority?>): String {
-        val signedJWT: SignedJWT
-        val claimsSet: JWTClaimsSet
+    fun generateToken(subject: String, credentials: Any, authorities: Collection<GrantedAuthority>): String {
+        val claimsSet: JWTClaimsSet = buildJWTClaimsSet(subject, authorities)
+        val signedJWT = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claimsSet)
+        try {
+            signedJWT.sign(JWTCustomSigner().signer)
+        } catch (e: JOSEException) {
+            log.info(e.message, e)
+        }
+        return signedJWT.serialize()
+    }
 
-        claimsSet = JWTClaimsSet.Builder()
+    private fun buildJWTClaimsSet(subject: String, authorities: Collection<GrantedAuthority>): JWTClaimsSet {
+        return JWTClaimsSet.Builder()
                 .subject(subject)
                 .expirationTime(Date(expiration))
                 .claim("roles", authorities
@@ -33,13 +42,6 @@ object JWTTokenService {
                         .map { obj: GrantedAuthority -> obj.authority }
                         .collect(Collectors.joining(",")))
                 .build()
-        signedJWT = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claimsSet)
-        try {
-            signedJWT.sign(JWTCustomSigner().signer)
-        } catch (e: JOSEException) {
-            e.printStackTrace()
-        }
-        return signedJWT.serialize()
     }
 
     /**

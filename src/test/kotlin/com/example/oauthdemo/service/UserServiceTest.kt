@@ -15,11 +15,11 @@ import uk.co.jemos.podam.api.PodamFactoryImpl
 
 @SpringBootTest
 @ExtendWith(MockitoExtension::class)
-class UserServiceTest() {
+class UserServiceTest {
     private val factory = PodamFactoryImpl()
 
-    @Autowired
-    private lateinit var userService: UserService
+//    @Autowired
+//    private lateinit var userService: UserService
 
     private fun createFakeUserInfo(): UserInfo {
         return factory.manufacturePojo(GoogleUserInfo::class.java)

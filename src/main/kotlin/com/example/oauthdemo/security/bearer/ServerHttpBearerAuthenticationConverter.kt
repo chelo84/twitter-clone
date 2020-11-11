@@ -38,12 +38,12 @@ class ServerHttpBearerAuthenticationConverter : (ServerWebExchange) -> Mono<Auth
                 .flatMap(jwtVerifier::check)
                 .flatMap(usernamePasswordAuthenticationBearer::create)
     }
-}
 
-private object AuthorizationHeaderPayload {
-    fun extract(serverWebExchange: ServerWebExchange): Mono<String> {
-        return Mono.justOrEmpty(serverWebExchange.request
-                                        .headers
-                                        .getFirst(HttpHeaders.AUTHORIZATION))
+    private object AuthorizationHeaderPayload {
+        fun extract(serverWebExchange: ServerWebExchange): Mono<String> {
+            return Mono.justOrEmpty(serverWebExchange.request
+                                            .headers
+                                            .getFirst(HttpHeaders.AUTHORIZATION))
+        }
     }
 }
