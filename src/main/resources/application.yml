@@ -1,0 +1,19 @@
+spring:
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: Test
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 1025714340489-thrd197pd3o2d3ajm3qfs2ulbgonl6du.apps.googleusercontent.com
+            client-secret: -pQ8yHJp1sNV8Wvd28N0VF7Y
+          github:
+            client-id: 024f190568160c950779
+            client-secret: 4ad9c2be2ee2c271ee52320583d8b436082c6e17
+          facebook:
+            client-id: 646451852709173
+            client-secret: d35bf62e964cf0396728266331984cc6

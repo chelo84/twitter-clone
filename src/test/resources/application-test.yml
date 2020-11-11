@@ -1,0 +1,9 @@
+spring:
+  autoconfigure:
+    exclude: com.example.oauthdemo.security.SecurityConfig
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 28018
+      database: Test
+  profiles: test
