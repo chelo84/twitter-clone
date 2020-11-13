@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct
 
 @Configuration
 class LocaleConfig {
+
     @PostConstruct
     fun init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))

@@ -1,6 +1,6 @@
 package com.example.oauthdemo.repository.user
 
-import com.example.oauthdemo.model.document.User
+import com.example.oauthdemo.model.document.user.User
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 

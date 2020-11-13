@@ -2,7 +2,7 @@ package com.example.oauthdemo.service
 
 import com.example.oauthdemo.exception.NotFoundException
 import com.example.oauthdemo.model.document.Post
-import com.example.oauthdemo.repository.testobject.PostRepository
+import com.example.oauthdemo.repository.follow.PostRepository
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 

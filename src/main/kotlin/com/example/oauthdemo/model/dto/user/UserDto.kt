@@ -1,4 +1,4 @@
-package com.example.oauthdemo.model.dto
+package com.example.oauthdemo.model.dto.user
 
 import java.time.LocalDateTime
 import javax.validation.constraints.Email

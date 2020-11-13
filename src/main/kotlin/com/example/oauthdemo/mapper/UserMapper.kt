@@ -1,7 +1,7 @@
 package com.example.oauthdemo.mapper
 
-import com.example.oauthdemo.model.document.User
-import com.example.oauthdemo.model.dto.UserDto
+import com.example.oauthdemo.model.document.user.User
+import com.example.oauthdemo.model.dto.user.UserDto
 import com.example.oauthdemo.repository.user.UserNonReactiveRepository
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping

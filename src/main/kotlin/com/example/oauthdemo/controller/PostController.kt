@@ -2,7 +2,7 @@ package com.example.oauthdemo.controller
 
 import com.example.oauthdemo.config.Log
 import com.example.oauthdemo.mapper.PostMapper
-import com.example.oauthdemo.model.document.User
+import com.example.oauthdemo.model.document.user.User
 import com.example.oauthdemo.service.PostService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.user.OAuth2User

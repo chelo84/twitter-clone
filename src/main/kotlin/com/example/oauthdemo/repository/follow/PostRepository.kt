@@ -1,4 +1,4 @@
-package com.example.oauthdemo.repository.testobject
+package com.example.oauthdemo.repository.follow
 
 import com.example.oauthdemo.model.document.Post
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository

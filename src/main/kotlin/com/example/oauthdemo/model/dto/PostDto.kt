@@ -1,5 +1,6 @@
 package com.example.oauthdemo.model.dto
 
+import com.example.oauthdemo.model.dto.user.UserDto
 import java.time.LocalDateTime
 
 class PostDto {

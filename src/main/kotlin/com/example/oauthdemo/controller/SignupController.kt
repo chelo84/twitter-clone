@@ -1,7 +1,7 @@
 package com.example.oauthdemo.controller
 
 import com.example.oauthdemo.mapper.UserMapper
-import com.example.oauthdemo.model.dto.UserDto
+import com.example.oauthdemo.model.dto.user.UserDto
 import com.example.oauthdemo.service.SignupService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*

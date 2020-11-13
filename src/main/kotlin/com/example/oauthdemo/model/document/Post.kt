@@ -2,16 +2,15 @@ package com.example.oauthdemo.model.document
 
 import org.springframework.data.annotation.*
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.validation.annotation.Validated
 import java.time.LocalDateTime
 import javax.validation.constraints.NotNull
 
 @Document
-@Validated
 class Post {
     @Id
     var uid: String? = null
 
+    @NotNull
     var text: String = ""
 
     @NotNull

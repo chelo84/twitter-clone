@@ -1,7 +1,7 @@
 package com.example.oauthdemo.service
 
 import com.example.oauthdemo.exception.UserAlreadyExistsException
-import com.example.oauthdemo.model.document.User
+import com.example.oauthdemo.model.document.user.User
 import com.example.oauthdemo.repository.user.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -18,8 +18,11 @@ class SignupService(
                 .hasElement()
                 .flatMap { isPresent ->
                     if (!isPresent) {
-                        userRepository.save(user.apply {
-                            password = passwordEncoder.encode(password)
+                        userRepository.save(User().apply {
+                            this.username = user.username
+                            this.password = passwordEncoder.encode(user.password)
+                            this.email = user.email
+                            this.name = user.name
                         })
                     } else {
                         Mono.error(UserAlreadyExistsException(user.username))

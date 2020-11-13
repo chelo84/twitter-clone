@@ -1,8 +1,9 @@
-package com.example.oauthdemo.model.document
+package com.example.oauthdemo.model.document.user
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 import javax.validation.constraints.NotNull
@@ -13,6 +14,7 @@ class User {
     var id: String? = null
 
     @NotNull
+    @Indexed(unique = true)
     lateinit var username: String
 
     @NotNull

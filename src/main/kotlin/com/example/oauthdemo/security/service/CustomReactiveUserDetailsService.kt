@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono
 class CustomReactiveUserDetailsService(
         private val userRepository: UserRepository,
 ) : ReactiveUserDetailsService {
+
     override fun findByUsername(username: String): Mono<UserDetails> {
         return userRepository.findByUsername(username)
                 .map {
