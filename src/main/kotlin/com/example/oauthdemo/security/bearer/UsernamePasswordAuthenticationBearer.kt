@@ -1,5 +1,6 @@
 package com.example.oauthdemo.security.bearer
 
+import com.example.oauthdemo.repository.user.UserNonReactiveRepository
 import com.example.oauthdemo.repository.user.UserRepository
 import com.nimbusds.jwt.SignedJWT
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,12 +18,16 @@ class UsernamePasswordAuthenticationBearer {
     @Autowired
     private lateinit var userRepository: UserRepository
 
+    @Autowired
+    private lateinit var userNonReactiveRepository: UserNonReactiveRepository
+
     fun create(signedJWTMono: SignedJWT): Mono<Authentication> {
         val authorities = getAuthorities(signedJWTMono) ?: return Mono.empty()
 
         return userRepository.findByUsername(signedJWTMono.jwtClaimsSet.subject as String)
                 .map { UsernamePasswordAuthenticationToken(it, null, authorities) }
     }
+
 
     private fun getAuthorities(signedJWTMono: SignedJWT): List<GrantedAuthority>? {
         return try {

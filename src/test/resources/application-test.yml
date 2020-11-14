@@ -7,3 +7,6 @@ spring:
       port: 28018
       database: Test
   profiles: test
+  rsocket:
+    server:
+      port: 7000

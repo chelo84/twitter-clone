@@ -17,3 +17,6 @@ spring:
           facebook:
             client-id: 646451852709173
             client-secret: d35bf62e964cf0396728266331984cc6
+  rsocket:
+    server:
+      port: 7000
