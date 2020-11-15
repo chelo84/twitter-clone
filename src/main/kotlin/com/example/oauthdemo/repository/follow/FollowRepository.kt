@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import reactor.core.publisher.Mono
 
 interface FollowRepository : ReactiveMongoRepository<Follow, String> {
-    fun existsByPair_FollowerAndPair_Followed(follower: String, followed: String): Mono<Boolean>
+    fun findByPair_FollowerAndPair_Followed(follower: String, followed: String): Mono<Follow?>
 }

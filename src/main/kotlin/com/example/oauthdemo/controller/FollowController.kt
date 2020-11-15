@@ -1,5 +1,6 @@
 package com.example.oauthdemo.controller
 
+import com.example.oauthdemo.model.document.follow.Follow
 import com.example.oauthdemo.model.document.user.User
 import com.example.oauthdemo.service.FollowService
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -19,12 +20,12 @@ class FollowController(
     private val connectedClients: ConcurrentMap<String, RSocketRequester> = ConcurrentHashMap()
 
     @MessageMapping("follow")
-    fun hello(@AuthenticationPrincipal principal: User, id: String) {
-        followService.follow(principal, id)
+    fun hello(@AuthenticationPrincipal principal: User, id: String): Mono<Follow> {
+        return followService.follow(principal, id)
     }
 
-    @MessageMapping("follow.unfollow")
+    @MessageMapping("unfollow")
     fun helloSecure(name: String?): Mono<String>? {
-        return Mono.just(String.format("Hello, %s! - from secured method", name))
+        TODO()
     }
 }

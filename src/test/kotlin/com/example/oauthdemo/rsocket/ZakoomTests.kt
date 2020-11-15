@@ -5,10 +5,11 @@ import com.example.oauthdemo.model.document.user.User
 import com.example.oauthdemo.security.jwt.JWTTokenService
 import com.example.oauthdemo.service.SignupService
 import com.example.oauthdemo.service.SignupServiceTests
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.test.annotation.DirtiesContext
@@ -25,13 +26,16 @@ abstract class ZakoomTests {
     @Autowired
     private lateinit var signupService: SignupService
 
-    protected lateinit var fakePrincipal: FakePrincipal
+    @Autowired
+    private lateinit var builder: RSocketRequester.Builder
+
+    protected lateinit var fakeAuthentication: FakeAuthentication
 
     companion object {
         val podamFactory = PodamFactoryImpl()
     }
 
-    @BeforeAll
+    @BeforeEach
     fun setup() {
         val fakeUser = newFakeUser()
 
@@ -42,7 +46,7 @@ abstract class ZakoomTests {
         })
 
         val token = JWTTokenService.generateToken(fakeUser.username, fakeUser, authorities)
-        fakePrincipal = FakePrincipal(
+        fakeAuthentication = FakeAuthentication(
                 fakeUser,
                 authorities,
                 token
@@ -53,9 +57,13 @@ abstract class ZakoomTests {
         val fakeUser = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
         return signupService.signup(fakeUser).block()!!
     }
+
+    fun createRSocketRequester(): RSocketRequester {
+        return builder.tcp("localhost", 7000)
+    }
 }
 
-data class FakePrincipal(
+data class FakeAuthentication(
         val principal: User,
         val authorities: List<GrantedAuthority>,
         val token: String,
