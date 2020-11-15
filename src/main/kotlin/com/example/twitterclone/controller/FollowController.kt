@@ -37,10 +37,7 @@ class FollowController(
         GlobalScope.launch {
             rSocketRequester.rsocket()!!
                     .onClose()
-                    .subscribe(null, null) {
-                        log.info("disconnect")
-                        requesterMap.remove(principal.id!!, rSocketRequester)
-                    }
+                    .subscribe(null, null) { requesterMap.remove(principal.id!!, rSocketRequester) }
         }
 
         requesterMap[principal.id!!] = rSocketRequester
@@ -52,7 +49,6 @@ class FollowController(
                 .doOnNext {
                     requesterMap[id]?.route("follow")
                             ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))
-//                            ?.retrieveMono(Void::class.java)
                             ?.send()
                             ?.subscribe()
                 }
