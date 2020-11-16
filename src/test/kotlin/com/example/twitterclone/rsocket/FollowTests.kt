@@ -193,12 +193,38 @@ class FollowTests : TwitterCloneTests() {
 
     @Test
     fun `Should throw error if the unfollowed user does not exist`() {
-        TODO()
+        // given
+        val nonExistentUserId = "nonExistentUser"
+
+        // when
+        val unfollowSocketRequester = createRSocketRequester()
+                .route(UNFOLLOW)
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(nonExistentUserId)
+                .retrieveMono(Void::class.java)
+
+        // then
+        StepVerifier.create(unfollowSocketRequester)
+                .verifyErrorMatches { it.message == "User with ID $nonExistentUserId not found" }
     }
 
     @Test
     fun `Should throw error if the user tries to follow someone that they don't follow`() {
-        TODO()
+        // given
+        val anotherUser = newFakeUser()
+
+        // when
+        val unfollowSocketRequester = createRSocketRequester()
+                .route(UNFOLLOW)
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(anotherUser.id!!)
+                .retrieveMono(Void::class.java)
+
+        // then
+        StepVerifier.create(unfollowSocketRequester)
+                .verifyErrorMatches { it.message == "User need to be followed in order to unfollow them" }
     }
 }
 
