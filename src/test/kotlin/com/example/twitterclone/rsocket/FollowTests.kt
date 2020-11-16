@@ -45,37 +45,37 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `User should receive a notification when someone follows them`() {
         // given
-        val userFollowed = fakeAuthentication.principal
-        val userFollowedToken = fakeAuthentication.token
-        val userFollower = newFakeUser()
-        val userFollowerToken = JWTTokenService.generateToken(userFollower.username, userFollower, listOf())
+        val userOne = fakeAuthentication.principal
+        val userOneToken = fakeAuthentication.token
+        val userTwo = newFakeUser()
+        val userTwoToken = JWTTokenService.generateToken(userTwo.username, userTwo, listOf())
 
         val followHandler = FollowHandler()
         val rSocketRequester = createRSocketRequester(followHandler)
 
         // when
-        log.info("setup connection to follow messageMapping for userFollowed")
+        log.info("setup connection to follow messageMapping for userOne")
         rSocketRequester
                 .route(FOLLOW)
-                .metadata(userFollowedToken,
+                .metadata(userOneToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
                 .sendMetadata()
                 .block()
 
-        log.info("userFollower follows userFollowed")
+        log.info("userTwo follows userOne")
         rSocketRequester
                 .route(FOLLOW)
-                .metadata(userFollowerToken,
+                .metadata(userTwoToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userFollowed.id!!)
+                .data(userOne.id!!)
                 .retrieveMono(Follow::class.java)
                 .block()
 
         // then
-        log.info("userFollowed should be notificated about userFollower following them")
+        log.info("userOne should be notificated about userTwo following them")
         Assertions.assertNotNull(followHandler)
         Assertions.assertNotNull(followHandler.followedBy)
-        Assertions.assertEquals(userFollower.id, followHandler.followedBy!!.id)
+        Assertions.assertEquals(userTwo.id, followHandler.followedBy!!.id)
     }
 
     @Test
@@ -151,18 +151,18 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `User should receive a notification when someone unfollows them`() {
         // given
-        val userUnfollowing = fakeAuthentication.principal
-        val userUnfollowingToken = fakeAuthentication.token
-        val userListening = newFakeUser()
-        val userListeningToken = JWTTokenService.generateToken(userListening.username, userListening, listOf())
+        val userOne = fakeAuthentication.principal
+        val userOneToken = fakeAuthentication.token
+        val userTwo = newFakeUser()
+        val userTwoToken = JWTTokenService.generateToken(userTwo.username, userTwo, listOf())
 
         val followHandler = FollowHandler()
         val rSocketRequester = createRSocketRequester(followHandler)
         rSocketRequester
                 .route(FOLLOW)
-                .metadata(userUnfollowingToken,
+                .metadata(userOneToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userListening.id!!)
+                .data(userTwo.id!!)
                 .retrieveMono(Void::class.java)
                 .block()
 
@@ -170,7 +170,7 @@ class FollowTests : TwitterCloneTests() {
         log.info("setup connection to follow messageMapping for userFollowed")
         rSocketRequester
                 .route(FOLLOW)
-                .metadata(userListeningToken,
+                .metadata(userTwoToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
                 .sendMetadata()
                 .block()
@@ -178,17 +178,17 @@ class FollowTests : TwitterCloneTests() {
         log.info("userFollower unfollows userFollowed")
         rSocketRequester
                 .route(UNFOLLOW)
-                .metadata(userUnfollowingToken,
+                .metadata(userOneToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userListening.id!!)
+                .data(userTwo.id!!)
                 .retrieveMono(Void::class.java)
                 .block()
 
         // then
-        log.info("userListening should be notificated about userUnfollowing unfollowing them")
+        log.info("userTwo should be notificated about userOne unfollowing them")
         Assertions.assertNotNull(followHandler)
         Assertions.assertNotNull(followHandler.unfollowedBy)
-        Assertions.assertEquals(userUnfollowing.id, followHandler.unfollowedBy!!.id)
+        Assertions.assertEquals(userOne.id, followHandler.unfollowedBy!!.id)
     }
 
     @Test
