@@ -1,6 +1,7 @@
 package com.example.twitterclone.service
 
 import com.example.twitterclone.exception.UserAlreadyFollowedException
+import com.example.twitterclone.exception.UserNotFollowedException
 import com.example.twitterclone.exception.UserNotFoundException
 import com.example.twitterclone.exception.UserToFollowItselfException
 import com.example.twitterclone.model.document.follow.Follow
@@ -21,15 +22,15 @@ class FollowService {
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    fun follow(principal: User, followed: String): Mono<Follow> {
+    fun follow(principal: User, userToFollow: String): Mono<Follow> {
         return followRepository.findByPair_FollowerAndPair_Followed(principal.id!!,
-                                                                    followed)
+                                                                    userToFollow)
                 .hasElement()
                 .flatMap { exists ->
                     when {
                         exists -> Mono.error(UserAlreadyFollowedException())
-                        principal.id!! == followed -> Mono.error(UserToFollowItselfException())
-                        else -> newFollow(principal.id!!, followed)
+                        principal.id!! == userToFollow -> Mono.error(UserToFollowItselfException())
+                        else -> newFollow(principal.id!!, userToFollow)
                     }
                 }
                 .flatMap(followRepository::save)
@@ -50,5 +51,16 @@ class FollowService {
                         Mono.error(UserNotFoundException(followed))
                     }
                 }
+    }
+
+    fun unfollow(principal: User, userToUnfollow: String): Mono<Void> {
+        return userRepository.findById(userToUnfollow)
+                .switchIfEmpty(Mono.error(UserNotFoundException(userToUnfollow)))
+                .flatMap {
+                    followRepository.findByPair_FollowerAndPair_Followed(principal.id!!,
+                                                                         userToUnfollow)
+                }
+                .switchIfEmpty(Mono.error(UserNotFollowedException()))
+                .flatMap { followRepository.deleteById(it!!.id!!) }
     }
 }

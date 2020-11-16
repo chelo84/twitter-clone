@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -23,17 +24,20 @@ class FollowController(
         private val followService: FollowService,
         private val userMapper: UserMapper,
 ) {
-    companion object : Log()
+    companion object : Log() {
+        const val FOLLOW: String = "follow"
+        const val UNFOLLOW: String = "unfollow"
+    }
 
     private val requesterMap: ConcurrentMap<String, RSocketRequester> = ConcurrentHashMap()
 
-    @MessageMapping("follow")
+    @MessageMapping(FOLLOW)
     fun followStream(@AuthenticationPrincipal principal: User, id: String): Flux<String> {
         return Flux.from { listOf(id) }
     }
 
-    @ConnectMapping("follow")
-    fun connectFollow(@AuthenticationPrincipal principal: User, rSocketRequester: RSocketRequester) {
+    @ConnectMapping(FOLLOW)
+    fun connect(@AuthenticationPrincipal principal: User, rSocketRequester: RSocketRequester) {
         GlobalScope.launch {
             rSocketRequester.rsocket()!!
                     .onClose()
@@ -43,19 +47,26 @@ class FollowController(
         requesterMap[principal.id!!] = rSocketRequester
     }
 
-    @MessageMapping("follow")
+    @MessageMapping(FOLLOW)
     fun follow(@AuthenticationPrincipal principal: User, id: String): Mono<Follow> {
         return followService.follow(principal, id)
                 .doOnNext {
-                    requesterMap[id]?.route("follow")
+                    requesterMap[id]?.route(FOLLOW)
                             ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))
                             ?.send()
                             ?.subscribe()
                 }
     }
 
-    @MessageMapping("unfollow")
-    fun helloSecure(name: String?): Mono<String>? {
-        TODO()
+    @MessageMapping(UNFOLLOW)
+    fun unfollow(@AuthenticationPrincipal principal: User, id: String): Mono<Void> {
+        return followService.unfollow(principal, id)
+                .switchIfEmpty {
+                    requesterMap[id]?.route(UNFOLLOW)
+                            ?.data(userMapper.findAndMapUserToUserDto(principal.id!!))
+                            ?.send()
+                            ?.subscribe()
+                    Mono.empty()
+                }
     }
 }
