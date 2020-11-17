@@ -3,7 +3,7 @@ package com.example.twitterclone.rsocket
 import com.example.twitterclone.config.Log
 import com.example.twitterclone.controller.FollowController.Companion.FOLLOW
 import com.example.twitterclone.controller.FollowController.Companion.UNFOLLOW
-import com.example.twitterclone.model.document.follow.Follow
+import com.example.twitterclone.model.dto.follow.FollowDto
 import com.example.twitterclone.model.dto.user.UserDto
 import com.example.twitterclone.repository.follow.FollowRepository
 import com.example.twitterclone.security.jwt.JWTTokenService
@@ -68,7 +68,7 @@ class FollowTests : TwitterCloneTests() {
                 .metadata(userTwoToken,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
                 .data(userOne.id!!)
-                .retrieveMono(Follow::class.java)
+                .retrieveMono(FollowDto::class.java)
                 .block()
 
         // then
@@ -116,13 +116,13 @@ class FollowTests : TwitterCloneTests() {
                 .verifyErrorMatches { it.message == "User already followed" }
     }
 
-    private fun simpleFollowSocketRequester(data: String): Mono<Follow> {
+    private fun simpleFollowSocketRequester(data: String): Mono<FollowDto> {
         return createRSocketRequester()
                 .route(FOLLOW)
                 .metadata(fakeAuthentication.token,
                           BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
                 .data(data)
-                .retrieveMono(Follow::class.java)
+                .retrieveMono(FollowDto::class.java)
     }
 
     @Test

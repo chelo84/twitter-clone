@@ -7,11 +7,17 @@ import java.time.LocalDateTime
 import javax.validation.constraints.NotNull
 
 @Document
-class Follow(val pair: FollowPair) {
+class Follow() {
     @Id
     var id: String? = null
+
+    lateinit var pair: FollowPair
 
     @NotNull
     @CreatedDate
     var followDate: LocalDateTime? = null
+
+    constructor(pair: FollowPair) : this() {
+        this.pair = pair
+    }
 }

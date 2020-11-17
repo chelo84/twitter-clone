@@ -1,9 +1,10 @@
 package com.example.twitterclone.controller
 
 import com.example.twitterclone.config.Log
+import com.example.twitterclone.mapper.FollowMapper
 import com.example.twitterclone.mapper.UserMapper
-import com.example.twitterclone.model.document.follow.Follow
 import com.example.twitterclone.model.document.user.User
+import com.example.twitterclone.model.dto.follow.FollowDto
 import com.example.twitterclone.service.FollowService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -12,7 +13,6 @@ import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.annotation.ConnectMapping
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import java.util.concurrent.ConcurrentHashMap
@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap
 class FollowController(
         private val followService: FollowService,
         private val userMapper: UserMapper,
+        private val followMapper: FollowMapper,
 ) {
     companion object : Log() {
         const val FOLLOW: String = "follow"
@@ -43,8 +44,9 @@ class FollowController(
     }
 
     @MessageMapping(FOLLOW)
-    fun follow(@AuthenticationPrincipal principal: User, id: String): Mono<Follow> {
+    fun follow(@AuthenticationPrincipal principal: User, id: String): Mono<FollowDto> {
         return followService.follow(principal, id)
+                .map(followMapper::followToDto)
                 .doOnNext {
                     requesterMap[id]?.route(FOLLOW)
                             ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))

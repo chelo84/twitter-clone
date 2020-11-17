@@ -7,8 +7,8 @@ import org.mapstruct.Mapping
 import org.mapstruct.Mappings
 import org.springframework.stereotype.Component
 
-@Mapper(componentModel = "spring", uses = [UserMapper::class])
 @Component
+@Mapper(componentModel = "spring", uses = [UserMapper::class])
 abstract class PostMapper {
     @Mappings(
             Mapping(target = "createdBy", qualifiedBy = [UserIdToUserDto::class]),
