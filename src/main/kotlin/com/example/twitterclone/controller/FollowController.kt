@@ -31,11 +31,6 @@ class FollowController(
 
     private val requesterMap: ConcurrentMap<String, RSocketRequester> = ConcurrentHashMap()
 
-    @MessageMapping(FOLLOW)
-    fun followStream(@AuthenticationPrincipal principal: User, id: String): Flux<String> {
-        return Flux.from { listOf(id) }
-    }
-
     @ConnectMapping(FOLLOW)
     fun connect(@AuthenticationPrincipal principal: User, rSocketRequester: RSocketRequester) {
         GlobalScope.launch {
