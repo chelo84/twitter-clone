@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull
 
 @Document
 class User {
+
     @Id
     var id: String? = null
 

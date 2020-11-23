@@ -1,12 +1,14 @@
 package com.example.twitterclone.model.document
 
 import org.springframework.data.annotation.*
+import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 import javax.validation.constraints.NotNull
 
 @Document
-class Post {
+class Tweet {
+
     @Id
     var uid: String? = null
 
@@ -25,7 +27,6 @@ class Post {
     @CreatedBy
     var createdBy: String? = null
 
-    @NotNull
-    @LastModifiedBy
-    var lastModifiedBy: String? = null
+    @DBRef
+    var hashtags: List<Hashtag>? = listOf()
 }

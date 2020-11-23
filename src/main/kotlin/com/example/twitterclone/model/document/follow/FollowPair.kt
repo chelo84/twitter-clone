@@ -1,6 +1,7 @@
 package com.example.twitterclone.model.document.follow
 
 class FollowPair() {
+
     lateinit var follower: String
 
     lateinit var followed: String

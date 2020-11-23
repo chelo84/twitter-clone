@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull
 
 @Document
 class Follow() {
+
     @Id
     var id: String? = null
 

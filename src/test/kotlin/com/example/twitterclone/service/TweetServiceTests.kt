@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 @ExtendWith(MockitoExtension::class)
-class PostServiceTests {
+class TweetServiceTests {
     @Test
     fun `Should create a new Post`() {
         TODO()
