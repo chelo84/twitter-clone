@@ -17,8 +17,8 @@ class HashtagService(private val hashtagRepository: HashtagRepository) {
         return Flux
                 .fromIterable(textHashtags)
                 .flatMap { hashtagValue ->
-                    hashtagRepository.findByHashtag(hashtagValue)
-                            .switchIfEmpty(createHashtag(hashtagValue))
+                    hashtagRepository.findByHashtag(hashtagValue.trim())
+                            .switchIfEmpty(createHashtag(hashtagValue.trim()))
                 }
     }
 

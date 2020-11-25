@@ -1,9 +1,9 @@
 package com.example.twitterclone.service
 
-import com.example.twitterclone.exception.NotFoundException
 import com.example.twitterclone.model.document.Tweet
 import com.example.twitterclone.repository.tweet.TweetRepository
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 
@@ -22,8 +22,9 @@ class TweetService(
                 }
     }
 
-    fun find(id: String): Mono<Tweet> {
-        return tweetRepository.findById(id)
-                .switchIfEmpty(Mono.error(NotFoundException("No post was found with id $id")))
+    fun find(fromUser: String, offset: Long, limit: Long): Flux<Tweet> {
+        return tweetRepository.findAllByUser(fromUser)
+                .limitRequest(limit)
+                .skip(offset)
     }
 }

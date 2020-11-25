@@ -12,7 +12,7 @@ class TweetDto {
 
     var createdDate: LocalDateTime? = null
 
-    var createdBy: UserDto? = null
+    var user: UserDto? = null
 
     var hashtags: List<Hashtag>? = listOf()
 }

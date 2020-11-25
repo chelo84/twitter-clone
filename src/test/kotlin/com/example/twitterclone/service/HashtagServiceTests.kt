@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import reactor.test.StepVerifier
+import java.time.Duration
 
 @SpringBootTest
 @ExtendWith(MockitoExtension::class)
@@ -57,9 +58,21 @@ class HashtagServiceTests : TwitterCloneTests() {
     @Test
     fun `Should return an already created hashtag if one exists`() {
         // given
+        val firstTweet = "Tweet with one #hashtag"
+        val secondTweet = "Tweet with the previous #hashtag"
+        val hashtags = mutableListOf("#hashtag")
+
+        // when
+        val createdHashtag = hashtagService.getHashtags(firstTweet)
+                .blockLast(Duration.ofSeconds(5))!!
 
         // then
-
-        TODO()
+        StepVerifier.create(hashtagService.getHashtags(secondTweet))
+                .expectNextMatches {
+                    it.uid == createdHashtag.uid &&
+                            hashtags.remove(it.hashtag)
+                }
+                .verifyComplete()
+        Assertions.assertEquals(0, hashtags.size)
     }
 }

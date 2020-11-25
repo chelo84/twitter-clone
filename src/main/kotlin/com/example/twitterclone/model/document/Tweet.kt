@@ -25,7 +25,7 @@ class Tweet {
 
     @NotNull
     @CreatedBy
-    var createdBy: String? = null
+    var user: String? = null
 
     @DBRef
     var hashtags: List<Hashtag>? = listOf()

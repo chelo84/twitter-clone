@@ -13,6 +13,7 @@ import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.annotation.ConnectMapping
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -44,7 +45,7 @@ class TweetController(
 
     @MessageMapping("tweet")
     fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: TweetDto): Mono<TweetDto> {
-        return tweetService.newTweet( tweetMapper.newTweetDtoToTweet(tweetDto) )
+        return tweetService.newTweet(tweetMapper.newTweetDtoToTweet(tweetDto))
                 .map(tweetMapper::tweetToDto)
 //                .doOnNext {
 //                    requesterMap[id]?.route(FollowController.FOLLOW)
@@ -52,6 +53,17 @@ class TweetController(
 //                            ?.send()
 //                            ?.subscribe()
 //                }
+    }
+
+    @MessageMapping("tweets.{offset}.{limit}")
+    fun findTweets(
+            @AuthenticationPrincipal principal: User,
+            @DestinationVariable offset: Long,
+            @DestinationVariable limit: Long,
+            fromUser: String,
+    ): Flux<TweetDto> {
+        return tweetService.find(fromUser, offset, limit)
+                .map(tweetMapper::tweetToDto)
     }
 
 }

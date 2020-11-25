@@ -12,19 +12,19 @@ import org.springframework.stereotype.Component
 @Mapper(componentModel = "spring", uses = [UserMapper::class])
 abstract class TweetMapper {
     @Mappings(
-            Mapping(target = "createdBy", qualifiedBy = [UserIdToUserDto::class])
+            Mapping(target = "user", qualifiedBy = [UserIdToUserDto::class])
     )
     abstract fun tweetToDto(tweet: Tweet): TweetDto
 
     @Mappings(
-            Mapping(target = "createdBy", ignore = true),
+            Mapping(target = "user", ignore = true),
             Mapping(target = "createdDate", ignore = true),
             Mapping(target = "hashtags", ignore = true)
     )
     abstract fun newTweetDtoToTweet(tweetDto: TweetDto): Tweet
 
     @Mappings(
-            Mapping(source = "createdBy.id", target = "createdBy")
+            Mapping(source = "user.id", target = "user")
     )
     abstract fun dtoToTweet(tweetDto: TweetDto): Tweet
 }
