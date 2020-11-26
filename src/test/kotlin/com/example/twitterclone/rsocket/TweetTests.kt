@@ -1,12 +1,16 @@
 package com.example.twitterclone.rsocket
 
 import com.example.twitterclone.config.Log
-import com.example.twitterclone.model.dto.TweetDto
+import com.example.twitterclone.model.dto.tweet.TweetDto
+import com.example.twitterclone.model.dto.tweet.TweetQueryDto
+import com.example.twitterclone.repository.tweet.TweetRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.test.annotation.DirtiesContext
+import reactor.test.StepVerifier
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -18,6 +22,9 @@ class TweetTests : TwitterCloneTests() {
             }
         }
     }
+
+    @Autowired
+    private lateinit var tweetRepository: TweetRepository
 
     @Test
     fun `Should create a new tweet`() {
@@ -41,16 +48,40 @@ class TweetTests : TwitterCloneTests() {
         Assertions.assertNotNull(newTweet.createdDate)
         Assertions.assertNotNull(newTweet.user)
         Assertions.assertNotNull(newTweet.hashtags)
-        Assertions.assertTrue { newTweet.hashtags!!.size == 2 }
+        Assertions.assertTrue { newTweet.hashtags.size == 2 }
         Assertions.assertTrue {
-            hashtags.contains(newTweet.hashtags!![0].hashtag) &&
-                    hashtags.contains(newTweet.hashtags!![1].hashtag)
+            hashtags.contains(newTweet.hashtags[0]) &&
+                    hashtags.contains(newTweet.hashtags[1])
         }
     }
 
     @Test
     fun `Should search tweets by user`() {
-        TODO()
+        // given
+        val fakeTweet = createFakeTweet()
+
+        // when
+        val tweetsFlux = createRSocketRequester()
+                .route("tweets")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(TweetQueryDto(fakeTweet.user!!.username!!, 0, 20))
+                .retrieveFlux(TweetDto::class.java)
+
+        // then
+        StepVerifier.create(tweetsFlux)
+                .expectNextMatches { it.text == fakeTweet.text }
+                .verifyComplete()
+    }
+
+    fun createFakeTweet(): TweetDto {
+        return createRSocketRequester()
+                .route("tweet")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(fakeTweetDto())
+                .retrieveMono(TweetDto::class.java)
+                .block()!!
     }
 
     @Test

@@ -17,7 +17,7 @@ class SpringSecurityAuditorAware : AuditorAware<String> {
                 .map(SecurityContext::getAuthentication)
                 .filter { obj: Authentication -> obj.isAuthenticated }
                 .map { obj: Authentication -> obj.principal as User }
-                .map { it.id }
+                .map { it.username }
     }
 }
 
@@ -28,6 +28,6 @@ class SpringSecurityReactiveAuditorAware : ReactiveAuditorAware<String> {
                 .map(SecurityContext::getAuthentication)
                 .filter { obj: Authentication -> obj.isAuthenticated }
                 .map { obj: Authentication -> obj.principal as User }
-                .flatMap { Mono.just(it.id!!) }
+                .flatMap { Mono.just(it.username) }
     }
 }

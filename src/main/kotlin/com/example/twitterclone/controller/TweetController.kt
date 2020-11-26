@@ -3,7 +3,8 @@ package com.example.twitterclone.controller
 import com.example.twitterclone.config.Log
 import com.example.twitterclone.mapper.TweetMapper
 import com.example.twitterclone.model.document.user.User
-import com.example.twitterclone.model.dto.TweetDto
+import com.example.twitterclone.model.dto.tweet.TweetDto
+import com.example.twitterclone.model.dto.tweet.TweetQueryDto
 import com.example.twitterclone.service.TweetService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -55,14 +56,13 @@ class TweetController(
 //                }
     }
 
-    @MessageMapping("tweets.{offset}.{limit}")
+    @MessageMapping("tweets")
     fun findTweets(
             @AuthenticationPrincipal principal: User,
-            @DestinationVariable offset: Long,
-            @DestinationVariable limit: Long,
-            fromUser: String,
+            queryDto: TweetQueryDto,
     ): Flux<TweetDto> {
-        return tweetService.find(fromUser, offset, limit)
+        queryDto.validateQuery()
+        return tweetService.find(queryDto)
                 .map(tweetMapper::tweetToDto)
     }
 

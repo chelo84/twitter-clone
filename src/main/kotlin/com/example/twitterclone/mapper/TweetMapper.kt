@@ -1,8 +1,7 @@
 package com.example.twitterclone.mapper
 
 import com.example.twitterclone.model.document.Tweet
-import com.example.twitterclone.model.dto.PostDto
-import com.example.twitterclone.model.dto.TweetDto
+import com.example.twitterclone.model.dto.tweet.TweetDto
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component
 @Mapper(componentModel = "spring", uses = [UserMapper::class])
 abstract class TweetMapper {
     @Mappings(
-            Mapping(target = "user", qualifiedBy = [UserIdToUserDto::class])
+            Mapping(target = "user", qualifiedBy = [UsernameToUserDto::class])
     )
     abstract fun tweetToDto(tweet: Tweet): TweetDto
 

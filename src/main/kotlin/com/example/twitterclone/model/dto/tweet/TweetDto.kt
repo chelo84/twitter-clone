@@ -1,11 +1,12 @@
-package com.example.twitterclone.model.dto
+package com.example.twitterclone.model.dto.tweet
 
-import com.example.twitterclone.model.document.Hashtag
 import com.example.twitterclone.model.dto.user.UserDto
 import java.time.LocalDateTime
 import javax.validation.constraints.NotBlank
 
 class TweetDto {
+
+    var uid: String? = null
 
     @NotBlank
     var text: String = ""
@@ -14,5 +15,5 @@ class TweetDto {
 
     var user: UserDto? = null
 
-    var hashtags: List<Hashtag>? = listOf()
+    var hashtags: List<String> = listOf()
 }

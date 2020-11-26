@@ -69,7 +69,7 @@ class HashtagServiceTests : TwitterCloneTests() {
         // then
         StepVerifier.create(hashtagService.getHashtags(secondTweet))
                 .expectNextMatches {
-                    it.uid == createdHashtag.uid &&
+                    it.hashtag == createdHashtag.hashtag &&
                             hashtags.remove(it.hashtag)
                 }
                 .verifyComplete()
