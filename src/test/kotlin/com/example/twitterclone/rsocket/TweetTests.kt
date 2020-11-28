@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.test.annotation.DirtiesContext
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 @SpringBootTest
@@ -120,6 +122,37 @@ class TweetTests : TwitterCloneTests() {
                 .verify()
     }
 
+    @Test
+    fun `Should make a Connect request`() {
+        // given
+        val (otherUser, otherUserToken) = newFakeUserAndToken()
+
+        val tweetHandler = TweetHandler()
+        val rSocketRequester = createRSocketRequester(tweetHandler)
+        rSocketRequester
+                .route("tweets.${otherUser.username}")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .sendMetadata()
+                .block()
+
+        val fakeTweetDto = fakeTweetDto()
+
+        // when
+        val createdTweet = createRSocketRequester()
+                .route("tweet")
+                .metadata(otherUserToken,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(fakeTweetDto)
+                .retrieveMono(TweetDto::class.java)
+                .block()
+
+        // then
+        Assertions.assertNotNull(tweetHandler)
+        Assertions.assertNotNull(tweetHandler.newTweet)
+        Assertions.assertEquals(tweetHandler.newTweet!!.uid, createdTweet!!.uid)
+    }
+
     fun createFakeTweet(): TweetDto {
         return createRSocketRequester()
                 .route("tweet")
@@ -128,5 +161,17 @@ class TweetTests : TwitterCloneTests() {
                 .data(fakeTweetDto())
                 .retrieveMono(TweetDto::class.java)
                 .block()!!
+    }
+}
+
+private class TweetHandler {
+    companion object : Log()
+
+    var newTweet: TweetDto? = null
+
+    @MessageMapping("tweet")
+    fun newTweet(payload: TweetDto): Mono<Void> {
+        newTweet = payload
+        return Mono.empty()
     }
 }

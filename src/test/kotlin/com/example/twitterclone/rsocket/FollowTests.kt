@@ -28,7 +28,7 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `Should follow an user`() {
         // given
-        val userToFollow = newFakeUser()
+        val userToFollow = newFakeUserAndToken().first
 
         // when
         val follow = simpleFollowSocketRequester(userToFollow.id!!)
@@ -47,8 +47,7 @@ class FollowTests : TwitterCloneTests() {
         // given
         val userOne = fakeAuthentication.principal
         val userOneToken = fakeAuthentication.token
-        val userTwo = newFakeUser()
-        val userTwoToken = JWTTokenService.generateToken(userTwo.username, userTwo, listOf())
+        val (userTwo, userTwoToken) = newFakeUserAndToken()
 
         val followHandler = FollowHandler()
         val rSocketRequester = createRSocketRequester(followHandler)
@@ -104,7 +103,7 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `Should throw error when trying to follow an user already followed`() {
         // given
-        val userToFollow = newFakeUser()
+        val userToFollow = newFakeUserAndToken().first
         simpleFollowSocketRequester(userToFollow.id!!)
                 .block()
 
@@ -128,7 +127,7 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `Should unfollow an user`() {
         // given
-        val userToUnfollow = newFakeUser()
+        val userToUnfollow = newFakeUserAndToken().first
         simpleFollowSocketRequester(userToUnfollow.id!!)
                 .block()
         Assertions.assertNotNull(followRepository.findByPair_FollowerAndPair_Followed(fakeAuthentication.principal.id!!,
@@ -153,7 +152,7 @@ class FollowTests : TwitterCloneTests() {
         // given
         val userOne = fakeAuthentication.principal
         val userOneToken = fakeAuthentication.token
-        val userTwo = newFakeUser()
+        val userTwo = newFakeUserAndToken().first
         val userTwoToken = JWTTokenService.generateToken(userTwo.username, userTwo, listOf())
 
         val followHandler = FollowHandler()
@@ -212,7 +211,7 @@ class FollowTests : TwitterCloneTests() {
     @Test
     fun `Should throw error if the user tries to follow someone that they don't follow`() {
         // given
-        val anotherUser = newFakeUser()
+        val anotherUser = newFakeUserAndToken().first
 
         // when
         val unfollowSocketRequester = createRSocketRequester()

@@ -27,9 +27,9 @@ class TweetController(
 ) {
     companion object : Log();
 
-    private val requesterMap: ConcurrentMap<String, RSocketRequester> = ConcurrentHashMap()
+    private val requesterMap: ConcurrentMap<String, MutableList<RSocketRequester>> = ConcurrentHashMap()
 
-    @ConnectMapping("tweet.{username}")
+    @ConnectMapping("tweets.{username}")
     fun connect(
             @AuthenticationPrincipal principal: User,
             @DestinationVariable username: String,
@@ -38,10 +38,14 @@ class TweetController(
         GlobalScope.launch {
             rSocketRequester.rsocket()!!
                     .onClose()
-                    .subscribe(null, null) { requesterMap.remove(principal.id!!, rSocketRequester) }
+                    .subscribe(null, null) {
+                        val requesterList = requesterMap[username]
+                        requesterList?.remove(rSocketRequester)
+                    }
         }
-
-        requesterMap[principal.id!!] = rSocketRequester
+        requesterMap[username] = (requesterMap[username] ?: mutableListOf()).apply {
+            add(rSocketRequester)
+        }
     }
 
 
@@ -49,12 +53,14 @@ class TweetController(
     fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: TweetDto): Mono<TweetDto> {
         return tweetService.newTweet(tweetMapper.newTweetDtoToTweet(tweetDto))
                 .map(tweetMapper::tweetToDto)
-//                .doOnNext {
-//                    requesterMap[id]?.route(FollowController.FOLLOW)
-//                            ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))
-//                            ?.send()
-//                            ?.subscribe()
-//                }
+                .doOnNext { createdTweetDto ->
+                    requesterMap[createdTweetDto.user?.username]?.forEach { rSocketRequester ->
+                        rSocketRequester.route("tweet")
+                                .data(createdTweetDto)
+                                .send()
+                                .subscribe()
+                    }
+                }
     }
 
     @MessageMapping("tweets")

@@ -47,7 +47,7 @@ abstract class TwitterCloneTests {
 
     @BeforeEach
     fun setup() {
-        val fakeUser = newFakeUser()
+        val fakeUser = newFakeUserAndToken().first
 
         val authorities = mutableListOf<GrantedAuthority>()
         authorities.addAll((0..5).map {
@@ -63,9 +63,10 @@ abstract class TwitterCloneTests {
         )
     }
 
-    final fun newFakeUser(): User {
+    final fun newFakeUserAndToken(): Pair<User, String> {
         val fakeUser = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
-        return signupService.signup(fakeUser).block()!!
+        return Pair(signupService.signup(fakeUser).block()!!,
+                    JWTTokenService.generateToken(fakeUser.username, fakeUser, listOf()))
     }
 
     fun createRSocketRequester(): RSocketRequester {
