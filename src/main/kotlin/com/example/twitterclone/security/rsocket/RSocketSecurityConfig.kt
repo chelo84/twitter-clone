@@ -20,8 +20,10 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.oauth2.server.resource.authentication.JwtReactiveAuthenticationManager
 import org.springframework.security.rsocket.core.PayloadSocketAcceptorInterceptor
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import javax.validation.Validation
 
 
 @Configuration
@@ -33,13 +35,22 @@ class RSocketSecurityConfig {
     private lateinit var serverHttpBearerAuthenticationConverter: ServerHttpBearerAuthenticationConverter
 
     @Bean
-    fun messageHandler(rSocketStrategies: RSocketStrategies): RSocketMessageHandler {
+    fun messageHandler(
+            rSocketStrategies: RSocketStrategies,
+            springValidatorAdapter: SpringValidatorAdapter,
+    ): RSocketMessageHandler {
         val messageHandler: RSocketMessageHandler = RSocketMessageHandler()
         messageHandler.rSocketStrategies = rSocketStrategies
         val args: ArgumentResolverConfigurer = messageHandler
                 .argumentResolverConfigurer
         args.addCustomResolver(AuthenticationPrincipalArgumentResolver())
+        messageHandler.validator = springValidatorAdapter
         return messageHandler
+    }
+
+    @Bean
+    fun springValidatorAdapter(): SpringValidatorAdapter {
+        return SpringValidatorAdapter(Validation.buildDefaultValidatorFactory().validator)
     }
 
     @Bean

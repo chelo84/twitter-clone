@@ -1,31 +1,12 @@
 package com.example.twitterclone.model.dto
 
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
+
 abstract class QueryDto(
+        @field:Min(0)
         val page: Int,
+        @field:Min(1)
+        @field:Max(20)
         var size: Int,
-) : QueryValidated {
-
-    /**
-     * If a message is returned, it's because an attribute is not valid
-     */
-    @Throws(QueryValidationException::class)
-    fun validateQuery() {
-        validate()?.apply {
-            throw QueryValidationException(this)
-        }
-    }
-
-    override fun validate(): String? {
-        return when {
-            size > 20 -> "Size cannot be higher than 20"
-            page < 0 -> "Page cannot be lesser than 0"
-            else -> null
-        }
-    }
-}
-
-interface QueryValidated {
-    fun validate(): String?
-}
-
-class QueryValidationException(message: String) : Exception(message)
+)

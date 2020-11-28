@@ -74,6 +74,52 @@ class TweetTests : TwitterCloneTests() {
                 .verifyComplete()
     }
 
+    @Test
+    fun `Should search two pages of tweets by user`() {
+        // given
+        val firstTweet = createFakeTweet()
+        val secondTweet = createFakeTweet()
+
+        // when
+        val pageOne = createRSocketRequester()
+                .route("tweets")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(TweetQueryDto(firstTweet.user!!.username!!, 0, 1))
+                .retrieveFlux(TweetDto::class.java)
+
+        val pageTwo = createRSocketRequester()
+                .route("tweets")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(TweetQueryDto(firstTweet.user!!.username!!, 1, 1))
+                .retrieveFlux(TweetDto::class.java)
+
+        // then
+        StepVerifier.create(pageOne)
+                .expectNextMatches { it.text == firstTweet.text }
+                .verifyComplete()
+        StepVerifier.create(pageTwo)
+                .expectNextMatches { it.text == secondTweet.text }
+                .verifyComplete()
+    }
+
+    @Test
+    fun `Should throw error if the dto is not valid`() {
+        // given
+        val search = createRSocketRequester()
+                .route("tweets")
+                .metadata(fakeAuthentication.token,
+                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
+                .data(TweetQueryDto("test", -10, 1))
+                .retrieveFlux(TweetDto::class.java)
+
+        // then
+        StepVerifier.create(search)
+                .expectErrorMatches { it.message?.contains("field 'page': rejected value [-10]") ?: false }
+                .verify()
+    }
+
     fun createFakeTweet(): TweetDto {
         return createRSocketRequester()
                 .route("tweet")
@@ -82,10 +128,5 @@ class TweetTests : TwitterCloneTests() {
                 .data(fakeTweetDto())
                 .retrieveMono(TweetDto::class.java)
                 .block()!!
-    }
-
-    @Test
-    fun `Should search tweets in batches (offset to limit)`() {
-        TODO()
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.annotation.ConnectMapping
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
@@ -59,9 +60,8 @@ class TweetController(
     @MessageMapping("tweets")
     fun findTweets(
             @AuthenticationPrincipal principal: User,
-            queryDto: TweetQueryDto,
+            @Validated queryDto: TweetQueryDto,
     ): Flux<TweetDto> {
-        queryDto.validateQuery()
         return tweetService.find(queryDto)
                 .map(tweetMapper::tweetToDto)
     }
