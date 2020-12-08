@@ -25,7 +25,7 @@ class TweetController(
         private val tweetService: TweetService,
         private val tweetMapper: TweetMapper,
 ) {
-    companion object : Log();
+    companion object : Log()
 
     private val requesterMap: ConcurrentMap<String, MutableList<RSocketRequester>> = ConcurrentHashMap()
 

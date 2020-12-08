@@ -18,6 +18,7 @@ abstract class TweetMapper {
     @Mappings(
             Mapping(target = "user", ignore = true),
             Mapping(target = "createdDate", ignore = true),
+            Mapping(target = "lastModifiedDate", ignore = true),
             Mapping(target = "hashtags", ignore = true)
     )
     abstract fun newTweetDtoToTweet(tweetDto: TweetDto): Tweet

@@ -13,6 +13,8 @@ class TweetDto {
 
     var createdDate: LocalDateTime? = null
 
+    var lastModifiedDate: LocalDateTime? = null
+
     var user: UserDto? = null
 
     var hashtags: List<String> = listOf()
