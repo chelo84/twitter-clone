@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull
 
 @Document
 class Hashtag(
-        @Id
-        @NotNull
-        @Indexed(unique = true)
-        val hashtag: String,
+    @Id
+    @NotNull
+    @Indexed(unique = true)
+    val hashtag: String,
 )

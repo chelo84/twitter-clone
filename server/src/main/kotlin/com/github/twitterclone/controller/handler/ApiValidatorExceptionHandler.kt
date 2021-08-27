@@ -25,11 +25,11 @@ class ApiValidatorExceptionHandler {
         log.error(ex.message, ex)
         val httpStatus = this.getHttpStatus(ex)
         val errorDetails = ErrorDto(
-                timestamp = LocalDateTime.now(),
-                status = httpStatus.value(),
-                error = httpStatus.reasonPhrase,
-                message = ex.message ?: "",
-                path = request.path.toString()
+            timestamp = LocalDateTime.now(),
+            status = httpStatus.value(),
+            error = httpStatus.reasonPhrase,
+            message = ex.message ?: "",
+            path = request.path.toString()
         )
         return ResponseEntity(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -38,11 +38,11 @@ class ApiValidatorExceptionHandler {
     fun handleWebExchangeBindException(ex: WebExchangeBindException, request: ServerHttpRequest): Any? {
         val httpStatus = this.getHttpStatus(ex)
         val errorDetails = ValidationErrorDto(
-                timestamp = LocalDateTime.now(),
-                status = httpStatus.value(),
-                reason = ex.reason,
-                errors = ex.fieldErrors.map { ValidationErrorFieldDto(it.field, it.defaultMessage) },
-                path = request.path.toString()
+            timestamp = LocalDateTime.now(),
+            status = httpStatus.value(),
+            reason = ex.reason,
+            errors = ex.fieldErrors.map { ValidationErrorFieldDto(it.field, it.defaultMessage) },
+            path = request.path.toString()
         )
         return ResponseEntity(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR)
     }

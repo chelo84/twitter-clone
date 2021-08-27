@@ -11,17 +11,17 @@ import reactor.core.publisher.Mono
 
 @Service
 class TweetService(
-        private val tweetRepository: TweetRepository,
-        private val hashtagService: HashtagService,
+    private val tweetRepository: TweetRepository,
+    private val hashtagService: HashtagService,
 ) {
     fun newTweet(tweet: Tweet): Mono<Tweet> {
         return hashtagService.getHashtags(tweet.text)
-                .collectList()
-                .flatMap { hashtags ->
-                    tweetRepository.save(
-                            tweet.apply { this.hashtags = hashtags.map { it.hashtag } }
-                    )
-                }
+            .collectList()
+            .flatMap { hashtags ->
+                tweetRepository.save(
+                    tweet.apply { this.hashtags = hashtags.map { it.hashtag } }
+                )
+            }
     }
 
     fun find(queryDto: TweetQueryDto): Flux<Tweet> {

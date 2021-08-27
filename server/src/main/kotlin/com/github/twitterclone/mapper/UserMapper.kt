@@ -8,7 +8,6 @@ import org.mapstruct.Mapping
 import org.mapstruct.Named
 import org.mapstruct.Qualifier
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -26,7 +25,7 @@ abstract class UserMapper {
 
     @UsernameToUserDto
     fun findAndMapUserToUserDto(userId: String) = userMapper.userToDto(
-            userNonReactiveRepository.findByUsername(userId)!!
+        userNonReactiveRepository.findByUsername(userId)!!
     )
 
     abstract fun dtoToUser(userDto: UserDto): User

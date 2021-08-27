@@ -9,17 +9,17 @@ import reactor.core.publisher.Mono
 
 @Component
 class CustomReactiveUserDetailsService(
-        private val userRepository: UserRepository,
+    private val userRepository: UserRepository,
 ) : ReactiveUserDetailsService {
 
     override fun findByUsername(username: String): Mono<UserDetails> {
         return userRepository.findByUsername(username)
-                .map {
-                    User.builder()
-                            .username(it.username)
-                            .password(it.password)
-                            .roles("USER")
-                            .build()
-                }
+            .map {
+                User.builder()
+                    .username(it.username)
+                    .password(it.password)
+                    .roles("USER")
+                    .build()
+            }
     }
 }

@@ -9,27 +9,22 @@ import org.springframework.boot.test.context.SpringBootTest
 @ExtendWith(MockitoExtension::class)
 class TweetServiceTests {
     @Test
-    fun `Should create a new Post`() {
+    fun `Should create a new Tweet`() {
 //        TODO()
     }
 
     @Test
-    fun `Should find a Post by id`() {
+    fun `Should find a Tweet by id`() {
 //        TODO()
     }
 
     @Test
-    fun `Should search Posts`() {
+    fun `Should search Tweets`() {
 //        TODO()
     }
 
     @Test
-    fun `Should throw an exception when trying to find a Post that does not exist`() {
-//        TODO()
-    }
-
-    @Test
-    fun `Should throw an exception when trying to create a Post without a Commnunity`() {
+    fun `Should throw an exception when trying to find a Tweet that does not exist`() {
 //        TODO()
     }
 }

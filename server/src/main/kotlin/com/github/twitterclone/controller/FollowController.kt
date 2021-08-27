@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentMap
 
 @Controller
 class FollowController(
-        private val followService: FollowService,
-        private val userMapper: UserMapper,
-        private val followMapper: FollowMapper,
+    private val followService: FollowService,
+    private val userMapper: UserMapper,
+    private val followMapper: FollowMapper,
 ) {
     companion object : Log() {
         const val FOLLOW: String = "follow"
@@ -36,8 +36,8 @@ class FollowController(
     fun connect(@AuthenticationPrincipal principal: User, rSocketRequester: RSocketRequester) {
         GlobalScope.launch {
             rSocketRequester.rsocket()!!
-                    .onClose()
-                    .subscribe(null, null) { requesterMap.remove(principal.username, rSocketRequester) }
+                .onClose()
+                .subscribe(null, null) { requesterMap.remove(principal.username, rSocketRequester) }
         }
 
         requesterMap[principal.username] = rSocketRequester
@@ -46,24 +46,24 @@ class FollowController(
     @MessageMapping(FOLLOW)
     fun follow(@AuthenticationPrincipal principal: User, username: String): Mono<FollowDto> {
         return followService.follow(principal, username)
-                .map(followMapper::followToDto)
-                .doOnNext {
-                    requesterMap[username]?.route(FOLLOW)
-                            ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))
-                            ?.send()
-                            ?.subscribe()
-                }
+            .map(followMapper::followToDto)
+            .doOnNext {
+                requesterMap[username]?.route(FOLLOW)
+                    ?.data(userMapper.findAndMapUserToUserDto(it.pair.follower))
+                    ?.send()
+                    ?.subscribe()
+            }
     }
 
     @MessageMapping(UNFOLLOW)
     fun unfollow(@AuthenticationPrincipal principal: User, username: String): Mono<Void> {
         return followService.unfollow(principal, username)
-                .switchIfEmpty {
-                    requesterMap[username]?.route(UNFOLLOW)
-                            ?.data(userMapper.findAndMapUserToUserDto(principal.username))
-                            ?.send()
-                            ?.subscribe()
-                    Mono.empty()
-                }
+            .switchIfEmpty {
+                requesterMap[username]?.route(UNFOLLOW)
+                    ?.data(userMapper.findAndMapUserToUserDto(principal.username))
+                    ?.send()
+                    ?.subscribe()
+                Mono.empty()
+            }
     }
 }

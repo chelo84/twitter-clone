@@ -17,6 +17,6 @@ class SignupController(private val signupService: SignupService, private val use
     @ResponseStatus(HttpStatus.CREATED)
     fun signup(uriComponentsBuilder: UriComponentsBuilder, @RequestBody @Valid userDto: UserDto): Mono<UserDto> {
         return signupService.signup(userMapper.dtoToUser(userDto))
-                .map(userMapper::userToDto)
+            .map(userMapper::userToDto)
     }
 }

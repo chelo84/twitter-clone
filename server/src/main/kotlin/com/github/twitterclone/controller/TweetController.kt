@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentMap
 
 @Controller
 class TweetController(
-        private val tweetService: TweetService,
-        private val tweetMapper: TweetMapper,
+    private val tweetService: TweetService,
+    private val tweetMapper: TweetMapper,
 ) {
     companion object : Log()
 
@@ -31,17 +31,17 @@ class TweetController(
 
     @ConnectMapping("tweets.{username}")
     fun connect(
-            @AuthenticationPrincipal principal: User,
-            @DestinationVariable username: String,
-            rSocketRequester: RSocketRequester,
+        @AuthenticationPrincipal principal: User,
+        @DestinationVariable username: String,
+        rSocketRequester: RSocketRequester,
     ) {
         GlobalScope.launch {
             rSocketRequester.rsocket()!!
-                    .onClose()
-                    .subscribe(null, null) {
-                        val requesterList = requesterMap[username]
-                        requesterList?.remove(rSocketRequester)
-                    }
+                .onClose()
+                .subscribe(null, null) {
+                    val requesterList = requesterMap[username]
+                    requesterList?.remove(rSocketRequester)
+                }
         }
         requesterMap[username] = (requesterMap[username] ?: mutableListOf()).apply {
             add(rSocketRequester)
@@ -52,24 +52,24 @@ class TweetController(
     @MessageMapping("tweet")
     fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: TweetDto): Mono<TweetDto> {
         return tweetService.newTweet(tweetMapper.newTweetDtoToTweet(tweetDto))
-                .map(tweetMapper::tweetToDto)
-                .doOnNext { createdTweetDto ->
-                    requesterMap[createdTweetDto.user?.username]?.forEach { rSocketRequester ->
-                        rSocketRequester.route("tweet")
-                                .data(createdTweetDto)
-                                .send()
-                                .subscribe()
-                    }
+            .map(tweetMapper::tweetToDto)
+            .doOnNext { createdTweetDto ->
+                requesterMap[createdTweetDto.user?.username]?.forEach { rSocketRequester ->
+                    rSocketRequester.route("tweet")
+                        .data(createdTweetDto)
+                        .send()
+                        .subscribe()
                 }
+            }
     }
 
     @MessageMapping("tweets")
     fun findTweets(
-            @AuthenticationPrincipal principal: User,
-            @Validated queryDto: TweetQueryDto,
+        @AuthenticationPrincipal principal: User,
+        @Validated queryDto: TweetQueryDto,
     ): Flux<TweetDto> {
         return tweetService.find(queryDto)
-                .map(tweetMapper::tweetToDto)
+            .map(tweetMapper::tweetToDto)
     }
 
 }

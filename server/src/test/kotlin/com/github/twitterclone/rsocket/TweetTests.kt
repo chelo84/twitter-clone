@@ -4,6 +4,7 @@ import com.github.twitterclone.config.Log
 import com.github.twitterclone.model.dto.tweet.TweetDto
 import com.github.twitterclone.model.dto.tweet.TweetQueryDto
 import com.github.twitterclone.repository.tweet.TweetRepository
+import io.rsocket.metadata.WellKnownMimeType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.util.MimeTypeUtils
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -37,12 +39,14 @@ class TweetTests : TwitterCloneTests() {
 
         // when
         val newTweet = createRSocketRequester()
-                .route("tweet")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(tweetDto)
-                .retrieveMono(TweetDto::class.java)
-                .block()
+            .route("tweet")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(tweetDto)
+            .retrieveMono(TweetDto::class.java)
+            .block()
 
         // then
         Assertions.assertNotNull(newTweet)
@@ -64,16 +68,18 @@ class TweetTests : TwitterCloneTests() {
 
         // when
         val tweetsFlux = createRSocketRequester()
-                .route("tweets")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(TweetQueryDto(fakeTweet.user!!.username!!, 0, 20))
-                .retrieveFlux(TweetDto::class.java)
+            .route("tweets")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(TweetQueryDto(fakeTweet.user!!.username!!, 0, 20))
+            .retrieveFlux(TweetDto::class.java)
 
         // then
         StepVerifier.create(tweetsFlux)
-                .expectNextMatches { it.text == fakeTweet.text }
-                .verifyComplete()
+            .expectNextMatches { it.text == fakeTweet.text }
+            .verifyComplete()
     }
 
     @Test
@@ -84,42 +90,48 @@ class TweetTests : TwitterCloneTests() {
 
         // when
         val pageOne = createRSocketRequester()
-                .route("tweets")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(TweetQueryDto(firstTweet.user!!.username!!, 0, 1))
-                .retrieveFlux(TweetDto::class.java)
+            .route("tweets")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(TweetQueryDto(firstTweet.user!!.username!!, 0, 1))
+            .retrieveFlux(TweetDto::class.java)
 
         val pageTwo = createRSocketRequester()
-                .route("tweets")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(TweetQueryDto(firstTweet.user!!.username!!, 1, 1))
-                .retrieveFlux(TweetDto::class.java)
+            .route("tweets")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(TweetQueryDto(firstTweet.user!!.username!!, 1, 1))
+            .retrieveFlux(TweetDto::class.java)
 
         // then
         StepVerifier.create(pageOne)
-                .expectNextMatches { it.text == firstTweet.text }
-                .verifyComplete()
+            .expectNextMatches { it.text == firstTweet.text }
+            .verifyComplete()
         StepVerifier.create(pageTwo)
-                .expectNextMatches { it.text == secondTweet.text }
-                .verifyComplete()
+            .expectNextMatches { it.text == secondTweet.text }
+            .verifyComplete()
     }
 
     @Test
     fun `Should throw error if the dto is not valid`() {
         // given
         val search = createRSocketRequester()
-                .route("tweets")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(TweetQueryDto("test", -10, 1))
-                .retrieveFlux(TweetDto::class.java)
+            .route("tweets")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(TweetQueryDto("test", -10, 1))
+            .retrieveFlux(TweetDto::class.java)
 
         // then
         StepVerifier.create(search)
-                .expectErrorMatches { it.message?.contains("field 'page': rejected value [-10]") ?: false }
-                .verify()
+            .expectErrorMatches { it.message?.contains("field 'page': rejected value [-10]") ?: false }
+            .verify()
     }
 
     @Test
@@ -130,22 +142,26 @@ class TweetTests : TwitterCloneTests() {
         val tweetHandler = TweetHandler()
         val rSocketRequester = createRSocketRequester(tweetHandler)
         rSocketRequester
-                .route("tweets.${otherUser.username}")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .sendMetadata()
-                .block()
+            .route("tweets.${otherUser.username}")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .sendMetadata()
+            .block()
 
         val fakeTweetDto = fakeTweetDto()
 
         // when
         val createdTweet = createRSocketRequester()
-                .route("tweet")
-                .metadata(otherUserToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(fakeTweetDto)
-                .retrieveMono(TweetDto::class.java)
-                .block()
+            .route("tweet")
+            .metadata(
+                BearerTokenMetadata(otherUserToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(fakeTweetDto)
+            .retrieveMono(TweetDto::class.java)
+            .block()
 
         // then
         Assertions.assertNotNull(tweetHandler)
@@ -155,12 +171,14 @@ class TweetTests : TwitterCloneTests() {
 
     fun createFakeTweet(): TweetDto {
         return createRSocketRequester()
-                .route("tweet")
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(fakeTweetDto())
-                .retrieveMono(TweetDto::class.java)
-                .block()!!
+            .route("tweet")
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(fakeTweetDto())
+            .retrieveMono(TweetDto::class.java)
+            .block()!!
     }
 }
 

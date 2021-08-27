@@ -23,44 +23,50 @@ class FollowService {
     private lateinit var userRepository: UserRepository
 
     fun follow(principal: User, userToFollow: String): Mono<Follow> {
-        return followRepository.findByPair_FollowerAndPair_Followed(principal.username,
-                                                                    userToFollow)
-                .hasElement()
-                .flatMap { exists ->
-                    when {
-                        exists -> Mono.error(UserAlreadyFollowedException())
-                        principal.username == userToFollow -> Mono.error(UserToFollowItselfException())
-                        else -> newFollow(principal.username, userToFollow)
-                    }
+        return followRepository.findByPair_FollowerAndPair_Followed(
+            principal.username,
+            userToFollow
+        )
+            .hasElement()
+            .flatMap { exists ->
+                when {
+                    exists -> Mono.error(UserAlreadyFollowedException())
+                    principal.username == userToFollow -> Mono.error(UserToFollowItselfException())
+                    else -> newFollow(principal.username, userToFollow)
                 }
-                .flatMap(followRepository::save)
+            }
+            .flatMap(followRepository::save)
     }
 
     private fun newFollow(follower: String, followed: String): Mono<Follow> {
         return userRepository.findByUsername(followed)
-                .hasElement()
-                .flatMap { exists ->
-                    if (exists) {
-                        Mono.just(Follow(
-                                FollowPair(
-                                        follower = follower,
-                                        followed = followed
-                                )
-                        ))
-                    } else {
-                        Mono.error(UserNotFoundException(followed))
-                    }
+            .hasElement()
+            .flatMap { exists ->
+                if (exists) {
+                    Mono.just(
+                        Follow(
+                            FollowPair(
+                                follower = follower,
+                                followed = followed
+                            )
+                        )
+                    )
+                } else {
+                    Mono.error(UserNotFoundException(followed))
                 }
+            }
     }
 
     fun unfollow(principal: User, userToUnfollow: String): Mono<Void> {
         return userRepository.findByUsername(userToUnfollow)
-                .switchIfEmpty(Mono.error(UserNotFoundException(userToUnfollow)))
-                .flatMap {
-                    followRepository.findByPair_FollowerAndPair_Followed(principal.username,
-                                                                         userToUnfollow)
-                }
-                .switchIfEmpty(Mono.error(UserNotFollowedException()))
-                .flatMap { followRepository.deleteById(it!!.id!!) }
+            .switchIfEmpty(Mono.error(UserNotFoundException(userToUnfollow)))
+            .flatMap {
+                followRepository.findByPair_FollowerAndPair_Followed(
+                    principal.username,
+                    userToUnfollow
+                )
+            }
+            .switchIfEmpty(Mono.error(UserNotFollowedException()))
+            .flatMap { followRepository.deleteById(it!!.id!!) }
     }
 }

@@ -1,12 +1,12 @@
 package com.github.twitterclone.security
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.twitterclone.repository.user.UserRepository
 import com.github.twitterclone.security.authentication.LoginAuthenticationSuccessHandler
 import com.github.twitterclone.security.authentication.LoginBodyAuthConverter
 import com.github.twitterclone.security.bearer.BearerTokenReactiveAuthenticationManager
 import com.github.twitterclone.security.bearer.ServerHttpBearerAuthenticationConverter
 import com.github.twitterclone.security.service.CustomReactiveUserDetailsService
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -52,8 +52,11 @@ class SecurityConfig {
 
     @Bean
     fun authenticationManager(): ReactiveAuthenticationManager {
-        val authenticationManager = UserDetailsRepositoryReactiveAuthenticationManager(CustomReactiveUserDetailsService(
-                userRepository))
+        val authenticationManager = UserDetailsRepositoryReactiveAuthenticationManager(
+            CustomReactiveUserDetailsService(
+                userRepository
+            )
+        )
         authenticationManager.setPasswordEncoder(passwordEncoder())
         return authenticationManager
     }
@@ -64,7 +67,7 @@ class SecurityConfig {
         filter.setSecurityContextRepository(securityContextRepository())
         filter.setServerAuthenticationConverter(LoginBodyAuthConverter(mapper))
         filter.setRequiresAuthenticationMatcher(
-                ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/signin")
+            ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/signin")
         )
         filter.setAuthenticationSuccessHandler(LoginAuthenticationSuccessHandler())
         return filter
@@ -72,25 +75,25 @@ class SecurityConfig {
 
     @Bean
     fun springSecurityFilterChain(
-            http: ServerHttpSecurity,
-            mapper: ObjectMapper,
+        http: ServerHttpSecurity,
+        mapper: ObjectMapper,
     ): SecurityWebFilterChain {
         http
-                .csrf().disable()
-                .authorizeExchange()
-                .pathMatchers("/signup")
-                .permitAll()
-                .and()
-                .authorizeExchange()
-                .pathMatchers("/signin", "/signout")
-                .authenticated()
-                .and()
-                .addFilterAt(authenticationWebFilter(mapper), SecurityWebFiltersOrder.AUTHENTICATION)
-                .authorizeExchange()
-                .pathMatchers("/api/**")
-                .authenticated()
-                .and()
-                .addFilterAt(bearerAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
+            .csrf().disable()
+            .authorizeExchange()
+            .pathMatchers("/signup")
+            .permitAll()
+            .and()
+            .authorizeExchange()
+            .pathMatchers("/signin", "/signout")
+            .authenticated()
+            .and()
+            .addFilterAt(authenticationWebFilter(mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .authorizeExchange()
+            .pathMatchers("/api/**")
+            .authenticated()
+            .and()
+            .addFilterAt(bearerAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
         return http.build()
     }
 

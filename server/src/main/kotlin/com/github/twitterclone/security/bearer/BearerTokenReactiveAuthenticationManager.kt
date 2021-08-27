@@ -4,7 +4,7 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.core.Authentication
 import reactor.core.publisher.Mono
 
-class BearerTokenReactiveAuthenticationManager() : ReactiveAuthenticationManager {
+class BearerTokenReactiveAuthenticationManager : ReactiveAuthenticationManager {
     /**
      * Successfully authenticate an Authentication object
      *

@@ -16,9 +16,9 @@ class ObjectMapperConfig {
     @Bean
     fun objectMapper(): ObjectMapper {
         return jacksonObjectMapper()
-                .registerModule(JavaTimeModule())
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .registerModule(JavaTimeModule())
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     }
 }

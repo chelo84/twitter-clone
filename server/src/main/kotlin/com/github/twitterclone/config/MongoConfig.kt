@@ -46,11 +46,11 @@ class MongoConfig : AbstractMongoClientConfiguration() {
 
     @Bean
     fun reactiveMongoDatabaseFactory(mongoClient: MongoClient) =
-            SimpleReactiveMongoDatabaseFactory(mongoClient, this.databaseName)
+        SimpleReactiveMongoDatabaseFactory(mongoClient, this.databaseName)
 
     @Bean
     fun reactiveTransactionManager(mongoDbFactory: ReactiveMongoDatabaseFactory) =
-            ReactiveMongoTransactionManager(mongoDbFactory)
+        ReactiveMongoTransactionManager(mongoDbFactory)
 
     @Bean
     fun transactionalOperator(tm: ReactiveTransactionManager) = TransactionalOperator.create(tm)

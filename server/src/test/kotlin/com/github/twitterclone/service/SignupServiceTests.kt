@@ -66,8 +66,8 @@ class SignupServiceTests : TwitterCloneTests() {
 
         // then
         StepVerifier.create(createdUserMono)
-                .expectError(UserAlreadyExistsException::class.java)
-                .verify()
+            .expectError(UserAlreadyExistsException::class.java)
+            .verify()
     }
 
 }

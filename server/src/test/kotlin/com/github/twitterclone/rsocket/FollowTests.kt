@@ -7,6 +7,7 @@ import com.github.twitterclone.model.dto.follow.FollowDto
 import com.github.twitterclone.model.dto.user.UserDto
 import com.github.twitterclone.repository.follow.FollowRepository
 import com.github.twitterclone.security.jwt.JWTTokenService
+import io.rsocket.metadata.WellKnownMimeType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.util.MimeTypeUtils
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -32,7 +34,7 @@ class FollowTests : TwitterCloneTests() {
 
         // when
         val follow = simpleFollowSocketRequester(userToFollow.username)
-                .block()
+            .block()
 
         // then
         Assertions.assertNotNull(follow)
@@ -55,20 +57,24 @@ class FollowTests : TwitterCloneTests() {
         // when
         log.info("setup connection to follow messageMapping for userOne")
         rSocketRequester
-                .route(FOLLOW)
-                .metadata(userOneToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .sendMetadata()
-                .block()
+            .route(FOLLOW)
+            .metadata(
+                BearerTokenMetadata(userOneToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .sendMetadata()
+            .block()
 
         log.info("userTwo follows userOne")
         rSocketRequester
-                .route(FOLLOW)
-                .metadata(userTwoToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userOne.username)
-                .retrieveMono(FollowDto::class.java)
-                .block()
+            .route(FOLLOW)
+            .metadata(
+                BearerTokenMetadata(userTwoToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(userOne.username)
+            .retrieveMono(FollowDto::class.java)
+            .block()
 
         // then
         log.info("userOne should be notificated about userTwo following them")
@@ -84,7 +90,7 @@ class FollowTests : TwitterCloneTests() {
 
         // then
         StepVerifier.create(followSocketRequester)
-                .verifyErrorMatches { it.message == "User cannot follow itself" }
+            .verifyErrorMatches { it.message == "User cannot follow itself" }
     }
 
     @Test
@@ -97,7 +103,7 @@ class FollowTests : TwitterCloneTests() {
 
         // then
         StepVerifier.create(followSocketRequester)
-                .verifyErrorMatches { it.message == "User with username $nonExistentId not found" }
+            .verifyErrorMatches { it.message == "User with username $nonExistentId not found" }
     }
 
     @Test
@@ -105,23 +111,25 @@ class FollowTests : TwitterCloneTests() {
         // given
         val userToFollow = newFakeUserAndToken().first
         simpleFollowSocketRequester(userToFollow.username)
-                .block()
+            .block()
 
         // when
         val followSocketRequester = simpleFollowSocketRequester(userToFollow.username)
 
         // then
         StepVerifier.create(followSocketRequester)
-                .verifyErrorMatches { it.message == "User already followed" }
+            .verifyErrorMatches { it.message == "User already followed" }
     }
 
     private fun simpleFollowSocketRequester(data: String): Mono<FollowDto> {
         return createRSocketRequester()
-                .route(FOLLOW)
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(data)
-                .retrieveMono(FollowDto::class.java)
+            .route(FOLLOW)
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(data)
+            .retrieveMono(FollowDto::class.java)
     }
 
     @Test
@@ -129,22 +137,32 @@ class FollowTests : TwitterCloneTests() {
         // given
         val userToUnfollow = newFakeUserAndToken().first
         simpleFollowSocketRequester(userToUnfollow.username)
-                .block()
-        Assertions.assertNotNull(followRepository.findByPair_FollowerAndPair_Followed(fakeAuthentication.principal.username,
-                                                                                      userToUnfollow.username).block())
+            .block()
+        Assertions.assertNotNull(
+            followRepository.findByPair_FollowerAndPair_Followed(
+                fakeAuthentication.principal.username,
+                userToUnfollow.username
+            ).block()
+        )
 
         // when
         createRSocketRequester()
-                .route(UNFOLLOW)
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userToUnfollow.username)
-                .retrieveMono(Void::class.java)
-                .block()
+            .route(UNFOLLOW)
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(userToUnfollow.username)
+            .retrieveMono(Void::class.java)
+            .block()
 
         // then
-        Assertions.assertNull(followRepository.findByPair_FollowerAndPair_Followed(fakeAuthentication.principal.username,
-                                                                                   userToUnfollow.username).block())
+        Assertions.assertNull(
+            followRepository.findByPair_FollowerAndPair_Followed(
+                fakeAuthentication.principal.username,
+                userToUnfollow.username
+            ).block()
+        )
     }
 
     @Test
@@ -158,30 +176,36 @@ class FollowTests : TwitterCloneTests() {
         val followHandler = FollowHandler()
         val rSocketRequester = createRSocketRequester(followHandler)
         rSocketRequester
-                .route(FOLLOW)
-                .metadata(userOneToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userTwo.username)
-                .retrieveMono(Void::class.java)
-                .block()
+            .route(FOLLOW)
+            .metadata(
+                BearerTokenMetadata(userOneToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(userTwo.username)
+            .retrieveMono(Void::class.java)
+            .block()
 
         // when
         log.info("setup connection to follow messageMapping for userFollowed")
         rSocketRequester
-                .route(FOLLOW)
-                .metadata(userTwoToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .sendMetadata()
-                .block()
+            .route(FOLLOW)
+            .metadata(
+                BearerTokenMetadata(userTwoToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .sendMetadata()
+            .block()
 
         log.info("userFollower unfollows userFollowed")
         rSocketRequester
-                .route(UNFOLLOW)
-                .metadata(userOneToken,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(userTwo.username)
-                .retrieveMono(Void::class.java)
-                .block()
+            .route(UNFOLLOW)
+            .metadata(
+                BearerTokenMetadata(userOneToken),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(userTwo.username)
+            .retrieveMono(Void::class.java)
+            .block()
 
         // then
         log.info("userTwo should be notificated about userOne unfollowing them")
@@ -197,15 +221,17 @@ class FollowTests : TwitterCloneTests() {
 
         // when
         val unfollowSocketRequester = createRSocketRequester()
-                .route(UNFOLLOW)
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(nonExistentUsername)
-                .retrieveMono(Void::class.java)
+            .route(UNFOLLOW)
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(nonExistentUsername)
+            .retrieveMono(Void::class.java)
 
         // then
         StepVerifier.create(unfollowSocketRequester)
-                .verifyErrorMatches { it.message == "User with username $nonExistentUsername not found" }
+            .verifyErrorMatches { it.message == "User with username $nonExistentUsername not found" }
     }
 
     @Test
@@ -215,15 +241,17 @@ class FollowTests : TwitterCloneTests() {
 
         // when
         val unfollowSocketRequester = createRSocketRequester()
-                .route(UNFOLLOW)
-                .metadata(fakeAuthentication.token,
-                          BearerTokenMetadata.BEARER_AUTHENTICATION_MIME_TYPE)
-                .data(anotherUser.username)
-                .retrieveMono(Void::class.java)
+            .route(UNFOLLOW)
+            .metadata(
+                BearerTokenMetadata(fakeAuthentication.token),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(anotherUser.username)
+            .retrieveMono(Void::class.java)
 
         // then
         StepVerifier.create(unfollowSocketRequester)
-                .verifyErrorMatches { it.message == "User need to be followed in order to unfollow them" }
+            .verifyErrorMatches { it.message == "User need to be followed in order to unfollow them" }
     }
 }
 

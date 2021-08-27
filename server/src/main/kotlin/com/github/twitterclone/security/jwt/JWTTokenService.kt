@@ -35,14 +35,14 @@ class JWTTokenService {
 
         private fun buildJWTClaimsSet(subject: String, authorities: Collection<GrantedAuthority>): JWTClaimsSet {
             return JWTClaimsSet.Builder()
-                    .subject(subject)
-                    .expirationTime(Date(expiration))
-                    .claim("roles", authorities
-                            .stream()
-                            .map { obj: Any? -> GrantedAuthority::class.java.cast(obj) }
-                            .map { obj: GrantedAuthority -> obj.authority }
-                            .collect(Collectors.joining(",")))
-                    .build()
+                .subject(subject)
+                .expirationTime(Date(expiration))
+                .claim("roles", authorities
+                    .stream()
+                    .map { obj: Any? -> GrantedAuthority::class.java.cast(obj) }
+                    .map { obj: GrantedAuthority -> obj.authority }
+                    .collect(Collectors.joining(",")))
+                .build()
         }
 
         /**
@@ -53,7 +53,7 @@ class JWTTokenService {
          */
         private val expiration: Long
             get() = Date().toInstant()
-                    .plus(Period.ofDays(1))
-                    .toEpochMilli()
+                .plus(Period.ofDays(1))
+                .toEpochMilli()
     }
 }

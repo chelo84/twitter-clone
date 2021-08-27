@@ -13,9 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 @SpringBootTest
 @ExtendWith(MockitoExtension::class)
 class FollowServiceTests : TwitterCloneTests() {
-    companion object {
-
-    }
+    companion object;
 
     @Autowired
     private lateinit var followService: FollowService

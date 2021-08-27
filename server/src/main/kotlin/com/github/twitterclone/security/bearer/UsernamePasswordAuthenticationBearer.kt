@@ -25,7 +25,7 @@ class UsernamePasswordAuthenticationBearer {
         val authorities = getAuthorities(signedJWTMono) ?: return Mono.empty()
 
         return userRepository.findByUsername(signedJWTMono.jwtClaimsSet.subject as String)
-                .map { UsernamePasswordAuthenticationToken(it, null, authorities) }
+            .map { UsernamePasswordAuthenticationToken(it, null, authorities) }
     }
 
 
@@ -33,9 +33,9 @@ class UsernamePasswordAuthenticationBearer {
         return try {
             val auths = signedJWTMono.jwtClaimsSet.getClaim("roles") as String
             Stream.of(auths.split(","))
-                    .flatMap { it.stream() }
-                    .map(::SimpleGrantedAuthority)
-                    .collect(Collectors.toList())
+                .flatMap { it.stream() }
+                .map(::SimpleGrantedAuthority)
+                .collect(Collectors.toList())
         } catch (ex: Exception) {
             null
         }

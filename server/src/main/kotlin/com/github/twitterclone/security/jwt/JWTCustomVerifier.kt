@@ -14,8 +14,8 @@ class JWTCustomVerifier {
 
     fun check(token: String): Mono<SignedJWT> {
         return Mono.justOrEmpty(createJWS(token))
-                .filter(::isNotExpired)
-                .filter(::validSignature)
+            .filter(::isNotExpired)
+            .filter(::validSignature)
     }
 
     private fun isNotExpired(token: SignedJWT): Boolean = getExpirationDate(token)!!.after(Date.from(Instant.now()))

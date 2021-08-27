@@ -10,22 +10,24 @@ import java.io.IOException
 class LoginBodyAuthConverter(private val mapper: ObjectMapper) : (ServerWebExchange) -> Mono<Authentication> {
     override fun invoke(exchange: ServerWebExchange): Mono<Authentication> {
         return exchange.request.body
-                .next()
-                .flatMap { buffer ->
-                    try {
-                        val request: AuthenticationData = mapper.readValue(buffer.asInputStream(),
-                                                                           AuthenticationData::class.java)
-                        Mono.just<AuthenticationData>(request)
-                    } catch (e: IOException) {
-                        Mono.error(e)
-                    }
+            .next()
+            .flatMap { buffer ->
+                try {
+                    val request: AuthenticationData = mapper.readValue(
+                        buffer.asInputStream(),
+                        AuthenticationData::class.java
+                    )
+                    Mono.just<AuthenticationData>(request)
+                } catch (e: IOException) {
+                    Mono.error(e)
                 }
-                .map { UsernamePasswordAuthenticationToken(it.username, it.password) }
+            }
+            .map { UsernamePasswordAuthenticationToken(it.username, it.password) }
 
     }
 
     private data class AuthenticationData(
-            var username: String,
-            var password: String,
+        var username: String,
+        var password: String,
     )
 }

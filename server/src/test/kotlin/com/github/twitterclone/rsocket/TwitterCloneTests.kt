@@ -57,16 +57,18 @@ abstract class TwitterCloneTests {
 
         val token = JWTTokenService.generateToken(fakeUser.username, authorities)
         fakeAuthentication = FakeAuthentication(
-                fakeUser,
-                authorities,
-                token
+            fakeUser,
+            authorities,
+            token
         )
     }
 
     final fun newFakeUserAndToken(): Pair<User, String> {
         val fakeUser = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
-        return Pair(signupService.signup(fakeUser).block()!!,
-                    JWTTokenService.generateToken(fakeUser.username, listOf()))
+        return Pair(
+            signupService.signup(fakeUser).block()!!,
+            JWTTokenService.generateToken(fakeUser.username, listOf())
+        )
     }
 
     fun createRSocketRequester(): RSocketRequester {
@@ -79,13 +81,13 @@ abstract class TwitterCloneTests {
             responder = RSocketMessageHandler.responder(strategies, handler)
         }
         return builder
-                .rsocketConnector { if (responder != null) it.acceptor(responder) }
-                .tcp("localhost", 7000)
+            .rsocketConnector { if (responder != null) it.acceptor(responder) }
+            .tcp("localhost", 7000)
     }
 }
 
 data class FakeAuthentication(
-        val principal: User,
-        val authorities: List<GrantedAuthority>,
-        val token: String,
+    val principal: User,
+    val authorities: List<GrantedAuthority>,
+    val token: String,
 )

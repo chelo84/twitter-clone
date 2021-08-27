@@ -12,14 +12,14 @@ import reactor.core.publisher.Mono
 
 @Controller
 internal class ProfileController(
-        private val profileService: ProfileService,
-        private val userMapper: UserMapper
+    private val profileService: ProfileService,
+    private val userMapper: UserMapper
 ) {
     companion object : Log()
 
     @MessageMapping("profile.user")
     fun userProfile(@AuthenticationPrincipal principal: User): Mono<UserDto> {
         return profileService.getUser(principal)
-                .map(userMapper::userToDto)
+            .map(userMapper::userToDto)
     }
 }

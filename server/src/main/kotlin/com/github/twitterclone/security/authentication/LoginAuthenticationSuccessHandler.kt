@@ -11,15 +11,15 @@ import reactor.core.publisher.Mono
 class LoginAuthenticationSuccessHandler : ServerAuthenticationSuccessHandler {
 
     override fun onAuthenticationSuccess(
-            webFilterExchange: WebFilterExchange,
-            authentication: Authentication,
+        webFilterExchange: WebFilterExchange,
+        authentication: Authentication,
     ): Mono<Void> {
         // Create and attach a JWT before passing the exchange to the filter chain
         val exchange = webFilterExchange.exchange
         exchange.response.statusCode = HttpStatus.ACCEPTED
         exchange.response
-                .headers
-                .add(HttpHeaders.AUTHORIZATION, getHttpAuthHeaderValue(authentication))
+            .headers
+            .add(HttpHeaders.AUTHORIZATION, getHttpAuthHeaderValue(authentication))
         return webFilterExchange.chain.filter(exchange)
     }
 

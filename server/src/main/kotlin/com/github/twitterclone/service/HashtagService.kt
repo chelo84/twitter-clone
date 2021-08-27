@@ -15,16 +15,16 @@ class HashtagService(private val hashtagRepository: HashtagRepository) {
         val textHashtags = hashtagsValuesFromText(text)
 
         return Flux
-                .fromIterable(textHashtags)
-                .flatMap { hashtagValue ->
-                    hashtagRepository.findByHashtag(hashtagValue.trim())
-                            .switchIfEmpty(createHashtag(hashtagValue.trim()))
-                }
+            .fromIterable(textHashtags)
+            .flatMap { hashtagValue ->
+                hashtagRepository.findByHashtag(hashtagValue.trim())
+                    .switchIfEmpty(createHashtag(hashtagValue.trim()))
+            }
     }
 
     private fun hashtagsValuesFromText(text: String): List<String> = hashtagRegex.findAll(text)
-            .map { it.value }
-            .toList()
+        .map { it.value }
+        .toList()
 
 
     private fun createHashtag(hashtag: String): Mono<Hashtag> {

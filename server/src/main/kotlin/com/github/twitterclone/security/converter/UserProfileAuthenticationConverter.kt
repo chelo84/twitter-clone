@@ -12,20 +12,21 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-class UserProfileAuthenticationConverter(private val repository: UserRepository) : Converter<Jwt, Mono<AbstractAuthenticationToken>?> {
+class UserProfileAuthenticationConverter(private val repository: UserRepository) :
+    Converter<Jwt, Mono<AbstractAuthenticationToken>?> {
     private val converter: JwtAuthenticationConverter = JwtAuthenticationConverter()
 
     override fun convert(source: Jwt): Mono<AbstractAuthenticationToken> {
         val token: JwtAuthenticationToken = converter.convert(source) as JwtAuthenticationToken
         val username = source.getClaim<String>("sub")
         return repository.findByUsername(username)
-                .switchIfEmpty(Mono.error { UsernameNotFoundException("Couldn't find the user $username") })
-                .map { profile -> UserProfileAuthentication(token, profile) }
+            .switchIfEmpty(Mono.error { UsernameNotFoundException("Couldn't find the user $username") })
+            .map { profile -> UserProfileAuthentication(token, profile) }
     }
 
     class UserProfileAuthentication constructor(
-            private val token: JwtAuthenticationToken,
-            private val principal: User,
+        private val token: JwtAuthenticationToken,
+        private val principal: User,
     ) : AbstractAuthenticationToken(token.authorities) {
         init {
             isAuthenticated = true
