@@ -14,3 +14,5 @@ pluginManagement {
 
 rootProject.name = "twitter-clone"
 include("server")
+include("client")
+include("sdk")

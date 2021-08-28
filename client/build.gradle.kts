@@ -19,30 +19,23 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.mapstruct:mapstruct-jdk8:1.3.1.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.3.1.Final")
-    implementation("org.springframework.boot:spring-boot-starter-rsocket")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    implementation("org.springframework.security:spring-security-messaging")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("org.springframework.shell:spring-shell-starter:2.0.1.RELEASE")
+    implementation("org.springframework.security:spring-security-config")
     implementation("org.springframework.security:spring-security-rsocket")
+    implementation("org.springframework.boot:spring-boot-starter-rsocket")
     implementation(project(":sdk"))
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
-    }
-    testImplementation("io.projectreactor:reactor-test")
-//    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
-    testImplementation("uk.co.jemos.podam:podam:7.1.0.RELEASE")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
 }
 
 tasks.withType<Test> {

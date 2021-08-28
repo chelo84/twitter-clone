@@ -1,0 +1,9 @@
+# -- contextual colors ----------------------------------------
+shell:
+  out:
+    info: CYAN
+    success: GREEN
+    warning: YELLOW
+    error: RED
+server:
+  port: 8181
