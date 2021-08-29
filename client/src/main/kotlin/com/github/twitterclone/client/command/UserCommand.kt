@@ -7,10 +7,9 @@ import org.springframework.shell.standard.ShellMethodAvailability
 @ShellComponent
 class UserCommand : SecuredCommand() {
 
-    @ShellMethod("Display list of users")
     @ShellMethodAvailability("isUserSignedIn")
+    @ShellMethod(key = ["user-list"], value = "Display list of users")
     fun userList(): String {
-        println("available")
         return "list"
     }
 }

@@ -6,7 +6,7 @@ import org.jline.utils.AttributedStyle
 import org.springframework.beans.factory.annotation.Value
 
 class ShellHelper(
-    var terminal: Terminal
+    val terminal: Terminal,
 ) {
     @Value("\${shell.out.info}")
     var infoColor: String? = null

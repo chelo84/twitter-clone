@@ -27,9 +27,9 @@ class FollowServiceTests : TwitterCloneTests() {
     @Test
     fun `User should follow another user`() {
         // given
-        var userOne = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
+        var userOne = userMapper.newUserToUser(SignupServiceTests.createFakeUserDto())
         userOne = signupService.signup(userOne).block()!!
-        var userTwo = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
+        var userTwo = userMapper.newUserToUser(SignupServiceTests.createFakeUserDto())
         userTwo = signupService.signup(userTwo).block()!!
 
         // when

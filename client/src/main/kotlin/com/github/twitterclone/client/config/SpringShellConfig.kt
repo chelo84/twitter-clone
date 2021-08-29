@@ -10,16 +10,20 @@ import org.jline.reader.Parser
 import org.jline.terminal.Terminal
 import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStyle
+import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.context.event.EventListener
 import org.springframework.shell.jline.JLineShellAutoConfiguration
+
 
 @Configuration
 class SpringShellConfig {
 
     @Bean
-    fun shellHelper(@Lazy terminal: Terminal): ShellHelper = ShellHelper(terminal)
+    fun shellHelper(@Lazy terminal: Terminal): ShellHelper =
+        ShellHelper(terminal)
 
     @Bean
     fun inputReader(
@@ -27,7 +31,7 @@ class SpringShellConfig {
         @Lazy parser: Parser,
         completer: JLineShellAutoConfiguration.CompleterAdapter,
         @Lazy history: History,
-        shellHelper: ShellHelper
+        shellHelper: ShellHelper,
     ): InputReader {
         val lineReaderBuilder = LineReaderBuilder.builder()
             .terminal(terminal)
@@ -42,5 +46,10 @@ class SpringShellConfig {
         lineReader.unsetOpt(LineReader.Option.INSERT_TAB)
 
         return InputReader(lineReader, shellHelper)
+    }
+
+    @EventListener(ApplicationStartedEvent::class)
+    fun onStartup() {
+        println("You can now enter commands. Type 'help' to see all commands available.")
     }
 }

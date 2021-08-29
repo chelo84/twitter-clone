@@ -28,6 +28,31 @@ class InputReader(private val lineReader: LineReader, private val shellHelper: S
         } else answer
     }
 
+    @JvmOverloads
+    fun promptNotEmpty(prompt: String, propertyName: String, echo: Boolean = true): String =
+        promptWithPredicate(prompt, StringUtils::hasText, "${propertyName.capitalize()} can not be empty!", echo)
+
+    @JvmOverloads
+    fun promptWithPredicate(
+        prompt: String,
+        predicate: (String?) -> Boolean,
+        onInvalidMessage: String?,
+        echo: Boolean = true
+    ): String {
+        var answer: String?
+        var answerInvalid = true
+        do {
+            answer = this.prompt(prompt, null, echo)
+            if (predicate(answer)) {
+                answerInvalid = false
+            } else {
+                shellHelper.printWarning(onInvalidMessage ?: "Answer can not be empty")
+            }
+        } while (answerInvalid)
+
+        return answer!!
+    }
+
     /**
      * Loops until one of the `options` is provided. Pressing return is equivalent to
      * returning `defaultValue`.

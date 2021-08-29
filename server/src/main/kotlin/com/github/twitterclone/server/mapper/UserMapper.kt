@@ -1,13 +1,13 @@
 package com.github.twitterclone.server.mapper
 
+import com.github.twitterclone.sdk.domain.user.NewUser
 import com.github.twitterclone.server.model.document.user.User
 import com.github.twitterclone.server.repository.user.UserNonReactiveRepository
-import org.mapstruct.Mapper
-import org.mapstruct.Mapping
-import org.mapstruct.Named
-import org.mapstruct.Qualifier
+import org.mapstruct.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.server.ResponseStatusException
 import com.github.twitterclone.sdk.domain.user.User as UserSdk
 
 @Component
@@ -28,7 +28,16 @@ abstract class UserMapper {
         userNonReactiveRepository.findByUsername(userId)!!
     )
 
-    abstract fun dtoToUser(userDto: UserSdk): User
+    abstract fun newUserToUser(newUser: NewUser): User
+
+    @BeforeMapping
+    fun newUserToUserPasswordValidation(
+        newUser: NewUser,
+        @MappingTarget user: User
+    ) {
+        if (newUser.password != newUser.passwordConfirmation)
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Password and confirmation do not match")
+    }
 }
 
 @Qualifier

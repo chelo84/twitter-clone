@@ -25,7 +25,6 @@ class ClientRemoteAuthenticationProvider(
     override fun authenticate(authentication: Authentication): Authentication {
         val username = authentication.principal
         val password = authentication.credentials
-        println("username: $username \npassword: $password")
         return webClient.post()
             .uri("/signin")
             .bodyValue(mapOf(Pair("username", username), Pair("password", password)))
@@ -45,11 +44,9 @@ class ClientRemoteAuthenticationProvider(
                 }
             }
             .zipWhen { token ->
-                println(token)
                 getPrincipal(token)
             }
             .map { tuple: Tuple2<String, User> ->
-                println("${tuple.t1}, ${tuple.t2}")
                 ClientAuthenticationToken(
                     tuple.t2,
                     tuple.t1

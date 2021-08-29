@@ -27,6 +27,9 @@ class User {
     var name: String? = null
 
     @NotNull
+    var surname: String? = null
+
+    @NotNull
     @CreatedDate
     var createdDate: LocalDateTime? = null
 

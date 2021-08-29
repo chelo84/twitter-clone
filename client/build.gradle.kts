@@ -47,3 +47,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = "11"
     }
 }
+tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
+    standardInput = System.`in`
+}

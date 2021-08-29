@@ -18,11 +18,8 @@ class SignupService(
             .hasElement()
             .flatMap { isPresent ->
                 if (!isPresent) {
-                    userRepository.save(User().apply {
-                        this.username = user.username
+                    userRepository.save(user.apply {
                         this.password = passwordEncoder.encode(user.password)
-                        this.email = user.email
-                        this.name = user.name
                     })
                 } else {
                     Mono.error(UserAlreadyExistsException(user.username))

@@ -1,5 +1,6 @@
 package com.github.twitterclone.server.service
 
+import com.github.twitterclone.sdk.domain.user.NewUser
 import com.github.twitterclone.sdk.domain.user.User
 import com.github.twitterclone.server.exception.UserAlreadyExistsException
 import com.github.twitterclone.server.mapper.UserMapper
@@ -17,11 +18,12 @@ import reactor.test.StepVerifier
 @ExtendWith(MockitoExtension::class)
 class SignupServiceTests : TwitterCloneTests() {
     companion object {
-        fun createFakeUserDto(): User {
-            val fakeUserDto = User()
+        fun createFakeUserDto(): NewUser {
+            val fakeUserDto = NewUser()
             fakeUserDto.name = podamFactory.manufacturePojo(String::class.java)
             fakeUserDto.username = podamFactory.manufacturePojo(String::class.java)
             fakeUserDto.password = podamFactory.manufacturePojo(String::class.java)
+            fakeUserDto.passwordConfirmation = fakeUserDto.password
             fakeUserDto.email = podamFactory.manufacturePojo(String::class.java)
             return fakeUserDto
         }
@@ -40,7 +42,7 @@ class SignupServiceTests : TwitterCloneTests() {
     @Test
     fun `Should create a new user`() {
         // given
-        val fakeUser = userMapper.dtoToUser(createFakeUserDto())
+        val fakeUser = userMapper.newUserToUser(createFakeUserDto())
 
         // when
         val createdUser = signupService.signup(fakeUser).block()
@@ -58,7 +60,7 @@ class SignupServiceTests : TwitterCloneTests() {
     @Test
     fun `Should throw an error if the user already exists`() {
         // given
-        val fakeUser = userMapper.dtoToUser(createFakeUserDto())
+        val fakeUser = userMapper.newUserToUser(createFakeUserDto())
         signupService.signup(fakeUser).block()
 
         // when

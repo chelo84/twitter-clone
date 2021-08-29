@@ -64,7 +64,7 @@ abstract class TwitterCloneTests {
     }
 
     final fun newFakeUserAndToken(): Pair<User, String> {
-        val fakeUser = userMapper.dtoToUser(SignupServiceTests.createFakeUserDto())
+        val fakeUser = userMapper.newUserToUser(SignupServiceTests.createFakeUserDto())
         return Pair(
             signupService.signup(fakeUser).block()!!,
             JWTTokenService.generateToken(fakeUser.username, listOf())
