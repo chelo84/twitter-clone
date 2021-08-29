@@ -1,4 +1,4 @@
-package com.github.twitterclone.client.command
+package com.github.twitterclone.client.config
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
