@@ -1,12 +1,10 @@
 package com.github.twitterclone.client.rsocket
 
 import com.github.twitterclone.client.shell.ShellHelper
-import com.github.twitterclone.sdk.domain.user.User
 import io.rsocket.SocketAcceptor
 import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.RSocketStrategies
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import reactor.util.retry.Retry
 import java.time.Duration
@@ -20,16 +18,26 @@ class RSocketRequesterFactory(
     ) {
 
     companion object {
-        private val rSocketRequesters: MutableMap<Pair<String, RSocketRequesterName>, RSocketRequester> = mutableMapOf()
+        private val rsocketRequesters: MutableMap<RSocketRequesterName, RSocketRequester> = mutableMapOf()
     }
 
     fun get(name: RSocketRequesterName): RSocketRequester {
-        val principal = SecurityContextHolder.getContext().authentication.principal as User
-        val rSocketRequester: RSocketRequester = rSocketRequesters[Pair(principal.id, name)]
-            ?: createRSocketRequester(name.createHandler(shellHelper))
-        rSocketRequesters[Pair(principal.id!!, name)] = createRSocketRequester(name.createHandler(shellHelper))
+        val rSocketRequester: RSocketRequester =
+            rsocketRequesters[name] ?: createRSocketRequester(name.createHandler(shellHelper))
+
+        rsocketRequesters[name] = createRSocketRequester(name.createHandler(shellHelper))
 
         return rSocketRequester
+    }
+
+    /**
+     * Used when a new authentication is made
+     * Disposes all [RSocketRequester.rsocketClient] and then clear [rsocketRequesters]
+     */
+    fun disposeAll() {
+        rsocketRequesters
+            .onEach { it.value.rsocketClient().dispose() }
+            .clear()
     }
 
     fun createRSocketRequester(): RSocketRequester {

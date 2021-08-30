@@ -53,6 +53,7 @@ class ClientRemoteAuthenticationProvider(
                 )
             }
             .switchIfEmpty(Mono.error(Exception("empty")))
+            .doOnSuccess { rSocketRequesterFactory.disposeAll() }
             .onErrorResume { e -> Mono.error(BadCredentialsException(e.message)) }
             .block()!!
     }
