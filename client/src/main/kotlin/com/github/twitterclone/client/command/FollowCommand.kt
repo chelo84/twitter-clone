@@ -23,7 +23,6 @@ class FollowCommand(
 ) : SecuredCommand() {
 
     @ShellMethod(value = "Follow a user")
-    @ShellMethodAvailability("isUserSignedIn")
     fun follow(@ShellOption(value = ["--username", "-u"], help = "User's username to follow") username: String) {
         shellHelper.printInfo("following $username ...")
         rSocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
@@ -46,7 +45,6 @@ class FollowCommand(
     }
 
     @ShellMethod(value = "Unfollow a user")
-    @ShellMethodAvailability("isUserSignedIn")
     fun unfollow(@ShellOption(value = ["--username", "-u"], help = "User's username to unfollow") username: String) {
         shellHelper.printInfo("unfollowing $username ...")
         rSocketRequesterFactory.get(RSocketRequesterName.FOLLOW)

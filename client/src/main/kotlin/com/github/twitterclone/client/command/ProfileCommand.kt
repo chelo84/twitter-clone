@@ -14,7 +14,6 @@ import org.springframework.shell.table.TableBuilder
 @ShellComponent
 class ProfileCommand(private val shellHelper: ShellHelper) : SecuredCommand() {
 
-    @ShellMethodAvailability("isUserSignedIn")
     @ShellMethod(value = "Display list of users")
     fun showProfile() {
         val userTableModel = BeanListTableModel(
