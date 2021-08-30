@@ -15,6 +15,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/milestone") }
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -33,6 +34,8 @@ dependencies {
     implementation("org.springframework.security:spring-security-rsocket")
     implementation("org.springframework.boot:spring-boot-starter-rsocket")
     implementation("org.jline:jline:3.20.0")
+    implementation("dev.reimer:progressbar-ktx:0.1.0")
+    implementation("me.tongfei:progressbar:0.9.2")
     implementation(project(":sdk"))
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")

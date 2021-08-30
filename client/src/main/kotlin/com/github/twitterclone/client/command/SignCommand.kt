@@ -51,14 +51,14 @@ class SignCommand(
     }
 
     private fun connectToFollow(authentication: Authentication) {
-        println("on success -> connect to follow")
-        rSocketRequesterFactory.getForName(RSocketRequesterName.FOLLOW)
+        rSocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
             .route("follow")
             .metadata(
                 BearerTokenMetadata(authentication.credentials as String),
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
             .sendMetadata()
+            .retry()
             .subscribe()
     }
 

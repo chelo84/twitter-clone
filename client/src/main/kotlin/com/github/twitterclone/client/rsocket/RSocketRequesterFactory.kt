@@ -8,6 +8,8 @@ import org.springframework.messaging.rsocket.RSocketStrategies
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
+import reactor.util.retry.Retry
+import java.time.Duration
 
 @Component
 class RSocketRequesterFactory(
@@ -21,7 +23,7 @@ class RSocketRequesterFactory(
         private val rSocketRequesters: MutableMap<Pair<String, RSocketRequesterName>, RSocketRequester> = mutableMapOf()
     }
 
-    fun getForName(name: RSocketRequesterName): RSocketRequester {
+    fun get(name: RSocketRequesterName): RSocketRequester {
         val principal = SecurityContextHolder.getContext().authentication.principal as User
         val rSocketRequester: RSocketRequester = rSocketRequesters[Pair(principal.id, name)]
             ?: createRSocketRequester(name.createHandler(shellHelper))
@@ -40,7 +42,11 @@ class RSocketRequesterFactory(
             responder = RSocketMessageHandler.responder(strategies, handler)
         }
         return builder
-            .rsocketConnector { if (responder != null) it.acceptor(responder) }
+            .rsocketConnector { connector ->
+                responder?.let { connector.acceptor(it) }
+
+                connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
+            }
             .tcp("localhost", 7000)
     }
 }
