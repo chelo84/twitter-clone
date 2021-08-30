@@ -74,7 +74,6 @@ class ShellHelper(
 
         if (above) {
             lineReader.printAbove(toPrint)
-            lineReader.flush()
         } else {
             terminal.writer().println(toPrint)
             terminal.flush()
