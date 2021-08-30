@@ -1,5 +1,6 @@
 package com.github.twitterclone.client.shell
 
+import org.jline.reader.impl.LineReaderImpl
 import org.jline.terminal.Terminal
 import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 
 class ShellHelper(
     val terminal: Terminal,
+    private val lineReader: LineReaderImpl,
 ) {
     @Value("\${shell.out.info}")
     var infoColor: String? = null
@@ -48,49 +50,34 @@ class ShellHelper(
         return getColored(message, PromptColor.valueOf(errorColor!!))
     }
 
-    /**
-     * Print message to the console in the success color.
-     *
-     * @param message message to print
-     */
-    fun printSuccess(message: String?) {
-        print(message, PromptColor.valueOf(successColor!!))
+    fun printSuccess(message: String?, above: Boolean = false) {
+        print(message, PromptColor.valueOf(successColor!!), above)
     }
 
-    /**
-     * Print message to the console in the info color.
-     *
-     * @param message message to print
-     */
-    fun printInfo(message: String?) {
-        print(message, PromptColor.valueOf(infoColor!!))
+    fun printInfo(message: String?, above: Boolean = false) {
+        print(message, PromptColor.valueOf(infoColor!!), above)
     }
 
-    /**
-     * Print message to the console in the warning color.
-     *
-     * @param message message to print
-     */
-    fun printWarning(message: String?) {
-        print(message, PromptColor.valueOf(warningColor!!))
+    fun printWarning(message: String?, above: Boolean = false) {
+        print(message, PromptColor.valueOf(warningColor!!), above)
     }
 
-    /**
-     * Print message to the console in the error color.
-     *
-     * @param message message to print
-     */
-    fun printError(message: String?) {
-        print(message, PromptColor.valueOf(errorColor!!))
+    fun printError(message: String?, above: Boolean = false) {
+        print(message, PromptColor.valueOf(errorColor!!), above)
     }
 
-    @JvmOverloads
-    fun print(message: String?, color: PromptColor? = null) {
+    fun print(message: String?, color: PromptColor? = null, above: Boolean = false) {
         var toPrint = message
-        if (color != null) {
+        color?.let {
             toPrint = getColored(message, color)
         }
-        terminal.writer().println(toPrint)
-        terminal.flush()
+
+        if (above) {
+            lineReader.printAbove(toPrint)
+            lineReader.flush()
+        } else {
+            terminal.writer().println(toPrint)
+            terminal.flush()
+        }
     }
 }

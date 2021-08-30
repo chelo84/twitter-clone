@@ -32,6 +32,7 @@ dependencies {
     implementation("org.springframework.security:spring-security-config")
     implementation("org.springframework.security:spring-security-rsocket")
     implementation("org.springframework.boot:spring-boot-starter-rsocket")
+    implementation("org.jline:jline:3.20.0")
     implementation(project(":sdk"))
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")

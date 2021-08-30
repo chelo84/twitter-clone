@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class CustomPromptProvider : PromptProvider {
-    override fun getPrompt(): AttributedString = AttributedString("")
+    override fun getPrompt(): AttributedString = AttributedString("shell:> ")
 }

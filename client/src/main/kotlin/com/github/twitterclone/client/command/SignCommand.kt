@@ -1,10 +1,13 @@
 package com.github.twitterclone.client.command
 
+import com.github.twitterclone.client.rsocket.RSocketRequesterFactory
+import com.github.twitterclone.client.rsocket.RSocketRequesterName
 import com.github.twitterclone.client.shell.InputReader
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.error.Error
 import com.github.twitterclone.sdk.domain.user.NewUser
 import com.github.twitterclone.sdk.domain.user.User
+import io.rsocket.metadata.WellKnownMimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationProvider
@@ -12,8 +15,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
+import org.springframework.util.MimeTypeUtils
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
@@ -22,7 +27,8 @@ import reactor.core.publisher.Mono
 class SignCommand(
     private val shellHelper: ShellHelper,
     private val authenticationProvider: AuthenticationProvider,
-    private val webClient: WebClient
+    private val webClient: WebClient,
+    private val rSocketRequesterFactory: RSocketRequesterFactory,
 ) {
 
     @Autowired
@@ -37,10 +43,23 @@ class SignCommand(
         try {
             val result: Authentication = authenticationProvider.authenticate(request)
             SecurityContextHolder.getContext().authentication = result
+            connectToFollow(result)
             shellHelper.printSuccess("Credentials successfully authenticated! $username -> welcome")
         } catch (ex: AuthenticationException) {
             shellHelper.printWarning("Authentication failed ${ex.message}")
         }
+    }
+
+    private fun connectToFollow(authentication: Authentication) {
+        println("on success -> connect to follow")
+        rSocketRequesterFactory.getForName(RSocketRequesterName.FOLLOW)
+            .route("follow")
+            .metadata(
+                BearerTokenMetadata(authentication.credentials as String),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .sendMetadata()
+            .subscribe()
     }
 
     @ShellMethod("Sign up user")
@@ -84,10 +103,10 @@ class SignCommand(
             )
             .bodyToMono(User::class.java)
             .doOnNext {
-                shellHelper.printSuccess("User ${it.username} created! Use the command sign-up to enter")
+                shellHelper.printSuccess("User ${it.username} created! Use the command sign-up to enter", above = true)
             }
             .onErrorResume { err ->
-                shellHelper.printError(err.message)
+                shellHelper.printError(err.message, above = true)
                 Mono.empty()
             }
             .subscribe()
