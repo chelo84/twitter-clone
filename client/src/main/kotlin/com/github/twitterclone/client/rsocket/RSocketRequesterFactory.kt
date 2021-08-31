@@ -1,5 +1,6 @@
 package com.github.twitterclone.client.rsocket
 
+import com.github.twitterclone.client.rsocket.RSocketRequesterFactory.Companion.rsocketRequesters
 import com.github.twitterclone.client.rsocket.handler.Handler
 import com.github.twitterclone.client.rsocket.handler.HandlerArgument
 import com.github.twitterclone.client.shell.ShellHelper
@@ -16,56 +17,79 @@ class RSocketRequesterFactory(
     private val strategies: RSocketStrategies,
     private val builder: RSocketRequester.Builder,
     private val shellHelper: ShellHelper,
-
-    ) {
+) {
 
     companion object {
         private val rsocketRequesters: MutableMap<RSocketRequesterName, Pair<RSocketRequester, Handler>> =
             mutableMapOf()
     }
 
-    fun get(name: RSocketRequesterName, args: Map<out HandlerArgument, Any> = emptyMap()): RSocketRequester {
-        val rsocketRequester: RSocketRequester =
-            rsocketRequesters[name]?.first ?: run {
-                val handler = name.createHandler(shellHelper, args)
-                val rsocketRequester = createRSocketRequester(handler)
-                rsocketRequesters[name] = Pair(rsocketRequester, handler)
+    /**
+     * Get the default [RSocketRequester] using [RSocketRequesterName.DEFAULT]
+     * If it still does not exist, creates it
+     */
+    fun get(): RSocketRequester = get(RSocketRequesterName.DEFAULT)
 
-                rsocketRequester
-            }
+    /**
+     * Get [RSocketRequester] from [RSocketRequesterName]
+     * If none exist, create a new [RSocketRequester]
+     */
+    fun get(name: RSocketRequesterName, args: Map<out HandlerArgument, Any> = emptyMap()): RSocketRequester =
+        rsocketRequesters[name]?.first ?: createRSocketRequester(name, args)
 
-        return rsocketRequester
+    /**
+     * Dispose [RSocketRequester] from [RSocketRequesterName] and then creates a new [RSocketRequester]
+     */
+    fun disposeAndCreate(
+        name: RSocketRequesterName,
+        args: Map<out HandlerArgument, Any> = emptyMap(),
+    ): RSocketRequester {
+        dispose(name)
+        return get(name, args)
     }
 
+    /**
+     * Get [Handler] from [RSocketRequesterName]
+     */
     fun getHandler(name: RSocketRequesterName): Handler? {
         return rsocketRequesters[name]?.second
     }
 
     /**
      * Used when a new authentication is made
-     * Disposes all [RSocketRequester.rsocketClient] and then clear [rsocketRequesters]
+     * Disposes all [RSocketRequester.rsocketClient] and clear [rsocketRequesters]
      */
     fun disposeAll() {
-        rsocketRequesters
-            .onEach { it.value.first.rsocketClient().dispose() }
-            .clear()
+        rsocketRequesters.keys
+            .onEach(::dispose)
     }
 
-    fun createRSocketRequester(): RSocketRequester {
-        return createRSocketRequester(null)
+    /**
+     * Dispose [RSocketRequester] from [RSocketRequesterName]
+     */
+    fun dispose(name: RSocketRequesterName) {
+        rsocketRequesters[name]?.first?.rsocketClient()?.dispose()
+        rsocketRequesters.remove(name)
     }
 
-    fun createRSocketRequester(handler: Any?): RSocketRequester {
-        var responder: SocketAcceptor? = null
-        if (handler != null) {
-            responder = RSocketMessageHandler.responder(strategies, handler)
-        }
-        return builder
+    /**
+     * Creates a new [RSocketRequester] from [RSocketRequesterName] creating its [Handler]
+     */
+    private fun createRSocketRequester(
+        name: RSocketRequesterName,
+        args: Map<out HandlerArgument, Any> = emptyMap(),
+    ): RSocketRequester {
+        val handler = name.createHandler(shellHelper, args)
+        val responder: SocketAcceptor = RSocketMessageHandler.responder(strategies, handler)
+        val rsocketRequester = builder
             .rsocketConnector { connector ->
-                responder?.let { connector.acceptor(it) }
-
+                connector.acceptor(responder)
                 connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
             }
             .tcp("localhost", 7000)
+
+        rsocketRequesters[name] = Pair(rsocketRequester, handler)
+
+        return rsocketRequester
     }
 }

@@ -34,7 +34,7 @@ class TweetsCommand(
 
     private fun subscribeToTweets(username: String) {
         shellHelper.printInfo("Subscribing to tweets from user $username")
-        rSocketRequesterFactory.get(RSocketRequesterName.TWEETS, mapOf(Pair(USERNAME, username)))
+        rSocketRequesterFactory.disposeAndCreate(RSocketRequesterName.TWEETS, mapOf(Pair(USERNAME, username)))
             .route("tweets", username)
             .metadata(
                 BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),

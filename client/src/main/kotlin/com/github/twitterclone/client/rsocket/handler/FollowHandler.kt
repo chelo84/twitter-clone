@@ -6,13 +6,22 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 
 class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerArgument, Any>) :
     Handler(shellHelper, args) {
+
+    /**
+     * Called whenever a user follows the signed-in user
+     * @param user: user that followed the signed-in user
+     */
     @MessageMapping("follow")
-    fun follow(payload: User) {
-        shellHelper.printWarning("User <${payload.username}> just followed you!!", above = true)
+    fun follow(user: User) {
+        shellHelper.printWarning("User <${user.username}> just followed you!!", above = true)
     }
 
+    /**
+     * Called whenever a user unfollows the signed-in user
+     * @param user: user that unfollowed the signed-in user
+     */
     @MessageMapping("unfollow")
-    fun unfollow(payload: User) {
-        shellHelper.printWarning("User <${payload.username}> unfollowed you D:", above = true)
+    fun unfollow(user: User) {
+        shellHelper.printWarning("User <${user.username}> unfollowed you D:", above = true)
     }
 }

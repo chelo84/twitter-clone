@@ -18,7 +18,7 @@ import reactor.util.function.Tuple2
 
 class ClientRemoteAuthenticationProvider(
     val webClient: WebClient,
-    val rSocketRequesterFactory: RSocketRequesterFactory
+    val rSocketRequesterFactory: RSocketRequesterFactory,
 ) : AuthenticationProvider {
 
     @Throws(AuthenticationException::class)
@@ -61,7 +61,7 @@ class ClientRemoteAuthenticationProvider(
     override fun supports(authentication: Class<*>?): Boolean = true
 
     private fun getPrincipal(token: String): Mono<User> {
-        return rSocketRequesterFactory.createRSocketRequester()
+        return rSocketRequesterFactory.get()
             .route("profile.user")
             .metadata(
                 BearerTokenMetadata(token),
