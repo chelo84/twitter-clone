@@ -1,5 +1,7 @@
 package com.github.twitterclone.client.rsocket
 
+import com.github.twitterclone.client.rsocket.handler.Handler
+import com.github.twitterclone.client.rsocket.handler.HandlerArgument
 import com.github.twitterclone.client.shell.ShellHelper
 import io.rsocket.SocketAcceptor
 import org.springframework.messaging.rsocket.RSocketRequester
@@ -18,16 +20,25 @@ class RSocketRequesterFactory(
     ) {
 
     companion object {
-        private val rsocketRequesters: MutableMap<RSocketRequesterName, RSocketRequester> = mutableMapOf()
+        private val rsocketRequesters: MutableMap<RSocketRequesterName, Pair<RSocketRequester, Handler>> =
+            mutableMapOf()
     }
 
-    fun get(name: RSocketRequesterName): RSocketRequester {
-        val rSocketRequester: RSocketRequester =
-            rsocketRequesters[name] ?: createRSocketRequester(name.createHandler(shellHelper))
+    fun get(name: RSocketRequesterName, args: Map<out HandlerArgument, Any> = emptyMap()): RSocketRequester {
+        val rsocketRequester: RSocketRequester =
+            rsocketRequesters[name]?.first ?: run {
+                val handler = name.createHandler(shellHelper, args)
+                val rsocketRequester = createRSocketRequester(handler)
+                rsocketRequesters[name] = Pair(rsocketRequester, handler)
 
-        rsocketRequesters[name] = createRSocketRequester(name.createHandler(shellHelper))
+                rsocketRequester
+            }
 
-        return rSocketRequester
+        return rsocketRequester
+    }
+
+    fun getHandler(name: RSocketRequesterName): Handler? {
+        return rsocketRequesters[name]?.second
     }
 
     /**
@@ -36,7 +47,7 @@ class RSocketRequesterFactory(
      */
     fun disposeAll() {
         rsocketRequesters
-            .onEach { it.value.rsocketClient().dispose() }
+            .onEach { it.value.first.rsocketClient().dispose() }
             .clear()
     }
 
