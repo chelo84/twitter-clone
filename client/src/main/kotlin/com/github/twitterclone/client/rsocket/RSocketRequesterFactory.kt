@@ -25,12 +25,6 @@ class RSocketRequesterFactory(
     }
 
     /**
-     * Get the default [RSocketRequester] using [RSocketRequesterName.DEFAULT]
-     * If it still does not exist, creates it
-     */
-    fun get(): RSocketRequester = get(RSocketRequesterName.DEFAULT)
-
-    /**
      * Get [RSocketRequester] from [RSocketRequesterName]
      * If none exist, create a new [RSocketRequester]
      */
@@ -80,16 +74,21 @@ class RSocketRequesterFactory(
         args: Map<out HandlerArgument, Any> = emptyMap(),
     ): RSocketRequester {
         val handler = name.createHandler(shellHelper, args)
-        val responder: SocketAcceptor = RSocketMessageHandler.responder(strategies, handler)
-        val rsocketRequester = builder
-            .rsocketConnector { connector ->
-                connector.acceptor(responder)
-                connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
-            }
-            .tcp("localhost", 7000)
-
+        val rsocketRequester = createRSocketRequester(handler)
         rsocketRequesters[name] = Pair(rsocketRequester, handler)
 
         return rsocketRequester
+    }
+
+    fun createRSocketRequester(): RSocketRequester = createRSocketRequester(null)
+
+    fun createRSocketRequester(handler: Any?): RSocketRequester {
+        val responder: SocketAcceptor? = handler?.let { RSocketMessageHandler.responder(strategies, handler) }
+        return builder
+            .rsocketConnector { connector ->
+                responder?.let { connector.acceptor(responder) }
+                connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
+            }
+            .tcp("localhost", 7000)
     }
 }

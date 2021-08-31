@@ -17,13 +17,13 @@ import org.springframework.util.MimeTypeUtils
 @ShellComponent
 class TweetsCommand(
     private val shellHelper: ShellHelper,
-    private val rSocketRequesterFactory: RSocketRequesterFactory,
+    private val rsocketRequesterFactory: RSocketRequesterFactory,
 ) : SecuredCommand() {
 
     @ShellMethod(value = "Get tweets from a user")
     fun tweets(@ShellOption(value = ["--username", "-u"], help = "User's username") username: String) {
         shellHelper.printInfo("Getting tweets from $username ...")
-        val handler = rSocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler?
+        val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler?
         if (handler?.username != username.trim()) {
             shellHelper.printWarning("username not equals")
             subscribeToTweets(username)
@@ -34,7 +34,7 @@ class TweetsCommand(
 
     private fun subscribeToTweets(username: String) {
         shellHelper.printInfo("Subscribing to tweets from user $username")
-        rSocketRequesterFactory.disposeAndCreate(RSocketRequesterName.TWEETS, mapOf(Pair(USERNAME, username)))
+        rsocketRequesterFactory.disposeAndCreate(RSocketRequesterName.TWEETS, mapOf(Pair(USERNAME, username)))
             .route("tweets", username)
             .metadata(
                 BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),
