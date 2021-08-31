@@ -28,8 +28,8 @@ class SpringShellConfig {
 
     @Bean
     fun inputReader(
-        @Lazy terminal: Terminal,
-        @Lazy parser: Parser,
+        terminal: Terminal,
+        parser: Parser,
         completer: JLineShellAutoConfiguration.CompleterAdapter,
         @Lazy history: History,
         shellHelper: ShellHelper,
