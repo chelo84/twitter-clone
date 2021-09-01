@@ -51,6 +51,9 @@ class SignCommand(
         }
     }
 
+    /**
+     * Connects to the "follow" Request Stream and subscribes to the [FollowHandler.follows] and [FollowHandler.unfollows]
+     */
     private fun connectToFollow(authentication: Authentication) {
         rsocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
             .route("follow")
@@ -59,7 +62,6 @@ class SignCommand(
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
             .sendMetadata()
-            .retry()
             .doOnSuccess {
                 val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.FOLLOW) as FollowHandler
                 handler.getFollows()

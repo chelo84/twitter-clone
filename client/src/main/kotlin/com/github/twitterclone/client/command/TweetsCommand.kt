@@ -49,7 +49,6 @@ class TweetsCommand(
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
             .sendMetadata()
-            .retry()
             .doOnSuccess {
                 val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler
                 handler.getTweets()
