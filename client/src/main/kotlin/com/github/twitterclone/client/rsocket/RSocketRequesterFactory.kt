@@ -63,6 +63,8 @@ class RSocketRequesterFactory(
      */
     fun dispose(name: RSocketRequesterName) {
         rsocketRequesters[name]?.first?.rsocketClient()?.dispose()
+        rsocketRequesters[name]?.second?.dispose()
+
         rsocketRequesters.remove(name)
     }
 

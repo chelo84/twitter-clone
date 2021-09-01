@@ -3,9 +3,16 @@ package com.github.twitterclone.client.rsocket.handler
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.user.User
 import org.springframework.messaging.handler.annotation.MessageMapping
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Sinks
 
 class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerArgument, Any>) :
     Handler(shellHelper, args) {
+
+    private val follows: Sinks.Many<User> = Sinks.many().multicast().directBestEffort()
+    fun getFollows(): Flux<User> = follows.asFlux()
+    private val unfollows: Sinks.Many<User> = Sinks.many().multicast().directBestEffort()
+    fun getUnfollows(): Flux<User> = unfollows.asFlux()
 
     /**
      * Called whenever a user follows the signed-in user
@@ -13,7 +20,7 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
      */
     @MessageMapping("follow")
     fun follow(user: User) {
-        shellHelper.printWarning("User <${user.username}> just followed you!!", above = true)
+        follows.tryEmitNext(user)
     }
 
     /**
@@ -22,6 +29,13 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
      */
     @MessageMapping("unfollow")
     fun unfollow(user: User) {
-        shellHelper.printWarning("User <${user.username}> unfollowed you D:", above = true)
+        unfollows.tryEmitNext(user)
+    }
+
+    override fun dispose() {
+        shellHelper.printInfo("DISPOSE FOLLOW")
+
+        follows.tryEmitComplete()
+        unfollows.tryEmitComplete()
     }
 }

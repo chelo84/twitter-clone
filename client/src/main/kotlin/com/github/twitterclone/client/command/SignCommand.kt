@@ -2,6 +2,7 @@ package com.github.twitterclone.client.command
 
 import com.github.twitterclone.client.rsocket.RSocketRequesterFactory
 import com.github.twitterclone.client.rsocket.RSocketRequesterName
+import com.github.twitterclone.client.rsocket.handler.FollowHandler
 import com.github.twitterclone.client.shell.InputReader
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.error.Error
@@ -28,7 +29,7 @@ class SignCommand(
     private val shellHelper: ShellHelper,
     private val authenticationProvider: AuthenticationProvider,
     private val webClient: WebClient,
-    private val rSocketRequesterFactory: RSocketRequesterFactory,
+    private val rsocketRequesterFactory: RSocketRequesterFactory,
 ) {
 
     @Autowired
@@ -51,7 +52,7 @@ class SignCommand(
     }
 
     private fun connectToFollow(authentication: Authentication) {
-        rSocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
+        rsocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
             .route("follow")
             .metadata(
                 BearerTokenMetadata(authentication.credentials as String),
@@ -59,6 +60,17 @@ class SignCommand(
             )
             .sendMetadata()
             .retry()
+            .doOnSuccess {
+                val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.FOLLOW) as FollowHandler
+                handler.getFollows()
+                    .subscribe { user ->
+                        shellHelper.printWarning("User <${user.username}> just followed you!!", above = true)
+                    }
+                handler.getUnfollows()
+                    .subscribe { user ->
+                        shellHelper.printWarning("User <${user.username}> unfollowed you D:", above = true)
+                    }
+            }
             .subscribe()
     }
 

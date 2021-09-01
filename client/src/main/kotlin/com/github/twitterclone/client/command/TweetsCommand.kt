@@ -21,12 +21,20 @@ class TweetsCommand(
 ) : SecuredCommand() {
 
     @ShellMethod(value = "Get tweets from a user")
-    fun tweets(@ShellOption(value = ["--username", "-u"], help = "User's username") username: String) {
+    fun tweets(
+        @ShellOption(value = ["--username", "-u"],
+                     help = "User's username",
+                     defaultValue = ShellOption.NULL) username: String?,
+    ) {
         shellHelper.printInfo("Getting tweets from $username ...")
-        val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler?
-        if (handler?.username != username.trim()) {
-            shellHelper.printWarning("username not equals")
-            subscribeToTweets(username)
+        username?.also {
+            val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler?
+            if (handler?.username != username.trim()) {
+                shellHelper.printWarning("username not equals")
+                subscribeToTweets(username)
+            }
+        } ?: run {
+            rsocketRequesterFactory.dispose(RSocketRequesterName.TWEETS)
         }
 
         shellHelper.printInfo("... Find tweets ...")
@@ -42,6 +50,14 @@ class TweetsCommand(
             )
             .sendMetadata()
             .retry()
+            .doOnSuccess {
+                val handler = rsocketRequesterFactory.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler
+                handler.getTweets()
+                    .subscribe { tweet ->
+                        shellHelper.printWarning("User <${tweet.user?.username}> tweeted: ${tweet.text}!!",
+                                                 above = true)
+                    }
+            }
             .subscribe()
     }
 }
