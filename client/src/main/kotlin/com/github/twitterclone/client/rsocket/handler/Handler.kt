@@ -7,7 +7,7 @@ abstract class Handler(private val shellHelper: ShellHelper, private val args: M
     Disposable
 
 /**
- * Used in [Enum] containing all arguments the implementation of [Handler] receives in its constructor
+ * Implement this class to add custom arguments to the [Handler] constructor
  */
 interface HandlerArgument {
     val value: String

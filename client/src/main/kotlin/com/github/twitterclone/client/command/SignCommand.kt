@@ -35,6 +35,10 @@ class SignCommand(
     @Autowired
     lateinit var inputReader: InputReader
 
+    /**
+     * Sign in with [User.username] and [User.password] to use [SecuredCommand] commands
+     * @see [User]
+     */
     @ShellMethod("Sign in as user")
     fun signIn() {
         val username = inputReader.promptNotEmpty("Please enter your username", "username")
@@ -52,7 +56,7 @@ class SignCommand(
     }
 
     /**
-     * Connects to the "follow" Request Stream and subscribes to the [FollowHandler.follows] and [FollowHandler.unfollows]
+     * Observe new follows and unfollows to the signed-in user
      */
     private fun connectToFollow(authentication: Authentication) {
         rsocketRequesterFactory.get(RSocketRequesterName.FOLLOW)
@@ -76,6 +80,9 @@ class SignCommand(
             .subscribe()
     }
 
+    /**
+     * Sign up a new [User]
+     */
     @ShellMethod("Sign up user")
     fun signUp() {
         val username: String = inputReader.promptNotEmpty("Please enter your username", "username")

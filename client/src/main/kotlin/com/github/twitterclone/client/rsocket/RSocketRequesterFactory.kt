@@ -25,14 +25,23 @@ class RSocketRequesterFactory(
     }
 
     /**
-     * Get [RSocketRequester] from [RSocketRequesterName]
-     * If none exist, create a new [RSocketRequester]
+     * Find or create [RSocketRequester]
+     *
+     * If it yet does not exist, create a new one
+     *
+     * @param name [rsocketRequesters] key
+     * @param args Arguments used in the constructor of the [Handler] for the [name]
+     * @return [RSocketRequester]
      */
     fun get(name: RSocketRequesterName, args: Map<out HandlerArgument, Any> = emptyMap()): RSocketRequester =
         rsocketRequesters[name]?.first ?: createRSocketRequester(name, args)
 
     /**
-     * Dispose [RSocketRequester] from [RSocketRequesterName] and then creates a new [RSocketRequester]
+     * Dispose [RSocketRequester] with [name] and then creates a new [RSocketRequester]
+     *
+     * @param name [rsocketRequesters] key
+     * @param args Arguments used in the constrcutor of the [Handler] of the [Handler]
+     * @return [RSocketRequester]
      */
     fun disposeAndCreate(
         name: RSocketRequesterName,
@@ -43,15 +52,18 @@ class RSocketRequesterFactory(
     }
 
     /**
-     * Get [Handler] from [RSocketRequesterName]
+     * Find [Handler] if existent
+     * @param name [rsocketRequesters] key
+     * @return nullable [Handler]
      */
     fun getHandler(name: RSocketRequesterName): Handler? {
         return rsocketRequesters[name]?.second
     }
 
     /**
-     * Used when a new authentication is made
-     * Disposes all [RSocketRequester.rsocketClient] and clear [rsocketRequesters]
+     * Dispose all [rsocketRequesters] and clear
+     *
+     * Called when a new authentication is made
      */
     fun disposeAll() {
         rsocketRequesters.keys
@@ -59,7 +71,7 @@ class RSocketRequesterFactory(
     }
 
     /**
-     * Dispose [RSocketRequester] from [RSocketRequesterName]
+     * Dispose [RSocketRequester] and its [Handler]
      */
     fun dispose(name: RSocketRequesterName) {
         rsocketRequesters[name]?.first?.rsocketClient()?.dispose()
@@ -69,7 +81,7 @@ class RSocketRequesterFactory(
     }
 
     /**
-     * Creates a new [RSocketRequester] from [RSocketRequesterName] creating its [Handler]
+     * Create a new [RSocketRequester] from [name], also creates its [Handler] using [args]
      */
     private fun createRSocketRequester(
         name: RSocketRequesterName,

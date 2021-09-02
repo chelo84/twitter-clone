@@ -7,6 +7,10 @@ import org.springframework.shell.standard.ShellMethodAvailability
 
 abstract class SecuredCommand {
 
+    /**
+     * Check whether the client is signed-in or not
+     * @return [Availability.available] or [Availability.unavailable]
+     */
     @ShellMethodAvailability
     fun isUserSignedIn(): Availability {
         val authentication: Authentication? = SecurityContextHolder.getContext().authentication

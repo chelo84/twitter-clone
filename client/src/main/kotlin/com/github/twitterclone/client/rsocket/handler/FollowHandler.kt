@@ -1,5 +1,6 @@
 package com.github.twitterclone.client.rsocket.handler
 
+import com.github.twitterclone.client.command.FollowCommand
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.user.User
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -16,7 +17,8 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
 
     /**
      * Called whenever a user follows the signed-in user
-     * @param user: user that followed the signed-in user
+     * @param user user that followed
+     * @see [FollowCommand.follow]
      */
     @MessageMapping("follow")
     fun follow(user: User) {
@@ -25,7 +27,8 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
 
     /**
      * Called whenever a user unfollows the signed-in user
-     * @param user: user that unfollowed the signed-in user
+     * @param user user that unfollowed
+     * @see [FollowCommand.unfollow]
      */
     @MessageMapping("unfollow")
     fun unfollow(user: User) {

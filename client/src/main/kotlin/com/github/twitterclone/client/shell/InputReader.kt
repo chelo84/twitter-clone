@@ -14,7 +14,7 @@ class InputReader(private val lineReader: LineReader, private val shellHelper: S
      * @param prompt
      * @param defaultValue
      * @param echo
-     * @return
+     * @return User inputted [String]
      */
     @JvmOverloads
     fun prompt(prompt: String, defaultValue: String? = null, echo: Boolean = true): String? {

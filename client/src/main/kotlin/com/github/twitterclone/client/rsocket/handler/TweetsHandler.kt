@@ -1,5 +1,6 @@
 package com.github.twitterclone.client.rsocket.handler
 
+import com.github.twitterclone.client.command.TweetsCommand
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.tweet.Tweet
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -22,12 +23,14 @@ class TweetsHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
     }
 
     /**
-     * Called whenever the user with [username] creates a new tweet
+     * Called whenever the [username] creates a new tweet
+     *
      * Adds the new tweet to the [tweets] sink
      * @param tweet: the newly created [Tweet]
+     * @see [TweetsCommand.tweets]
      */
     @MessageMapping("tweet")
-    fun follow(tweet: Tweet) {
+    fun newTweet(tweet: Tweet) {
         tweets.tryEmitNext(tweet)
     }
 
