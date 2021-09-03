@@ -1,6 +1,6 @@
 package com.github.twitterclone.client.rsocket.handler
 
-import com.github.twitterclone.client.command.TweetsCommand
+import com.github.twitterclone.client.command.TweetCommand
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.tweet.Tweet
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -27,7 +27,7 @@ class TweetsHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
      *
      * Adds the new tweet to the [tweets] sink
      * @param tweet: the newly created [Tweet]
-     * @see [TweetsCommand.tweets]
+     * @see [TweetCommand.tweets]
      */
     @MessageMapping("tweet")
     fun newTweet(tweet: Tweet) {

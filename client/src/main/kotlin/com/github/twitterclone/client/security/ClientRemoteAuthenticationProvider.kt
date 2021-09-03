@@ -1,6 +1,7 @@
 package com.github.twitterclone.client.security
 
 import com.github.twitterclone.client.rsocket.RSocketRequesterFactory
+import com.github.twitterclone.client.rsocket.RSocketRequesterRepository
 import com.github.twitterclone.sdk.domain.user.User
 import io.rsocket.metadata.WellKnownMimeType
 import org.springframework.http.HttpHeaders
@@ -17,8 +18,9 @@ import reactor.core.publisher.Mono
 import reactor.util.function.Tuple2
 
 class ClientRemoteAuthenticationProvider(
-    val webClient: WebClient,
-    val rSocketRequesterFactory: RSocketRequesterFactory,
+    private val webClient: WebClient,
+    private val rSocketRequesterFactory: RSocketRequesterFactory,
+    private val rSocketRequesterRepository: RSocketRequesterRepository,
 ) : AuthenticationProvider {
 
     @Throws(AuthenticationException::class)
@@ -53,7 +55,7 @@ class ClientRemoteAuthenticationProvider(
                 )
             }
             .switchIfEmpty(Mono.error(Exception("empty")))
-            .doOnSuccess { rSocketRequesterFactory.disposeAll() }
+            .doOnSuccess { rSocketRequesterRepository.disposeAll() }
             .onErrorResume { e -> Mono.error(BadCredentialsException(e.message)) }
             .block()!!
     }
