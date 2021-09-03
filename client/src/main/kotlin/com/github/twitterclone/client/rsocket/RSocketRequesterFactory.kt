@@ -1,6 +1,5 @@
 package com.github.twitterclone.client.rsocket
 
-import com.github.twitterclone.client.rsocket.RSocketRequesterFactory.Companion.rsocketRequesters
 import com.github.twitterclone.client.rsocket.handler.Handler
 import com.github.twitterclone.client.rsocket.handler.HandlerArgument
 import com.github.twitterclone.client.shell.ShellHelper
@@ -8,99 +7,39 @@ import io.rsocket.SocketAcceptor
 import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.messaging.rsocket.RSocketStrategies
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler
-import org.springframework.stereotype.Component
 import reactor.util.retry.Retry
 import java.time.Duration
 
-@Component
 class RSocketRequesterFactory(
     private val strategies: RSocketStrategies,
     private val builder: RSocketRequester.Builder,
     private val shellHelper: ShellHelper,
 ) {
 
-    companion object {
-        private val rsocketRequesters: MutableMap<RSocketRequesterName, Pair<RSocketRequester, Handler>> =
-            mutableMapOf()
-    }
-
-    /**
-     * Find or create [RSocketRequester]
-     *
-     * If it yet does not exist, create a new one
-     *
-     * @param name [rsocketRequesters] key
-     * @param args Arguments used in the constructor of the [Handler] for the [name]
-     * @return [RSocketRequester]
-     */
-    fun get(name: RSocketRequesterName, args: Map<out HandlerArgument, Any> = emptyMap()): RSocketRequester =
-        rsocketRequesters[name]?.first ?: createRSocketRequester(name, args)
-
-    /**
-     * Dispose [RSocketRequester] with [name] and then creates a new [RSocketRequester]
-     *
-     * @param name [rsocketRequesters] key
-     * @param args Arguments used in the constrcutor of the [Handler] of the [Handler]
-     * @return [RSocketRequester]
-     */
-    fun disposeAndCreate(
-        name: RSocketRequesterName,
-        args: Map<out HandlerArgument, Any> = emptyMap(),
-    ): RSocketRequester {
-        dispose(name)
-        return get(name, args)
-    }
-
-    /**
-     * Find [Handler] if existent
-     * @param name [rsocketRequesters] key
-     * @return nullable [Handler]
-     */
-    fun getHandler(name: RSocketRequesterName): Handler? {
-        return rsocketRequesters[name]?.second
-    }
-
-    /**
-     * Dispose all [rsocketRequesters] and clear
-     *
-     * Called when a new authentication is made
-     */
-    fun disposeAll() {
-        rsocketRequesters.keys
-            .onEach(::dispose)
-    }
-
-    /**
-     * Dispose [RSocketRequester] and its [Handler]
-     */
-    fun dispose(name: RSocketRequesterName) {
-        rsocketRequesters[name]?.first?.rsocketClient()?.dispose()
-        rsocketRequesters[name]?.second?.dispose()
-
-        rsocketRequesters.remove(name)
-    }
 
     /**
      * Create a new [RSocketRequester] from [name], also creates its [Handler] using [args]
      */
-    private fun createRSocketRequester(
+    fun createRSocketRequesterWrapper(
         name: RSocketRequesterName,
         args: Map<out HandlerArgument, Any> = emptyMap(),
-    ): RSocketRequester {
+    ): RSocketRequesterWrapper {
         val handler = name.createHandler(shellHelper, args)
-        val rsocketRequester = createRSocketRequester(handler)
-        rsocketRequesters[name] = Pair(rsocketRequester, handler)
+        return createRSocketRequesterWrapper(handler)
+    }
 
-        return rsocketRequester
+    fun createRSocketRequesterWrapper(handler: Handler): RSocketRequesterWrapper {
+        val responder: SocketAcceptor = handler.let { RSocketMessageHandler.responder(strategies, handler) }
+        return RSocketRequesterWrapper(createRSocketRequester(responder), handler)
     }
 
     fun createRSocketRequester(): RSocketRequester = createRSocketRequester(null)
 
-    fun createRSocketRequester(handler: Any?): RSocketRequester {
-        val responder: SocketAcceptor? = handler?.let { RSocketMessageHandler.responder(strategies, handler) }
+    fun createRSocketRequester(responder: SocketAcceptor?): RSocketRequester {
         return builder
             .rsocketConnector { connector ->
-                responder?.let { connector.acceptor(responder) }
+                responder?.let { connector.acceptor(it) }
+
                 connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
             }
             .tcp("localhost", 7000)
