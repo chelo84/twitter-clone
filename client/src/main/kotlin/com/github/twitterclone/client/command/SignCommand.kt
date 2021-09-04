@@ -16,6 +16,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
+import org.springframework.shell.standard.ShellOption
 
 @ShellComponent
 class SignCommand(
@@ -33,10 +34,22 @@ class SignCommand(
      * Sign in with [User.username] and [User.password] to use [SecuredCommand] commands
      * @see [User]
      */
+    @Suppress("NAME_SHADOWING")
     @ShellMethod("Sign in as user")
-    fun signIn() {
-        val username = inputReader.promptNotEmpty("Please enter your username", "username")
-        val password = inputReader.promptNotEmpty("Please enter your password", "password", false)
+    fun signIn(
+        @ShellOption(
+            value = ["--username", "-u"],
+            help = "Username",
+            defaultValue = ShellOption.NULL
+        ) username: String?,
+        @ShellOption(
+            value = ["--password", "-p"],
+            help = "Password",
+            defaultValue = ShellOption.NULL
+        ) password: String?,
+    ) {
+        val username = username ?: inputReader.promptNotEmpty("Please enter your username", "username")
+        val password = password ?: inputReader.promptNotEmpty("Please enter your password", "password", false)
         val request: Authentication = UsernamePasswordAuthenticationToken(username, password)
 
         try {

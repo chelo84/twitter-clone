@@ -30,7 +30,10 @@ class RSocketRequesterFactory(
 
     fun createRSocketRequesterWrapper(handler: Handler): RSocketRequesterWrapper {
         val responder: SocketAcceptor = handler.let { RSocketMessageHandler.responder(strategies, handler) }
-        return RSocketRequesterWrapper(createRSocketRequester(responder), handler)
+        return RSocketRequesterWrapper(
+            createRSocketRequester(responder),
+            handler
+        )
     }
 
     fun createRSocketRequester(): RSocketRequester = createRSocketRequester(null)
@@ -39,7 +42,6 @@ class RSocketRequesterFactory(
         return builder
             .rsocketConnector { connector ->
                 responder?.let { connector.acceptor(it) }
-
                 connector.reconnect(Retry.backoff(10, Duration.ofMillis(500)))
             }
             .tcp("localhost", 7000)
