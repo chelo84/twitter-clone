@@ -2,6 +2,7 @@ package com.github.twitterclone.client.command
 
 import com.github.twitterclone.client.rsocket.factory.TweetRSocketReqFactory
 import com.github.twitterclone.client.service.TweetService
+import com.github.twitterclone.client.shell.InputReader
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.client.state.TweetState
 import com.github.twitterclone.sdk.domain.user.User
@@ -46,5 +47,20 @@ class TweetCommand(
         }
 
         shellHelper.printInfo("... Find tweets ...")
+    }
+
+    @Suppress("NAME_SHADOWING")
+    @ShellMethod(value = "Post a new tweet")
+    fun tweet(
+        @ShellOption(
+            value = ["--text", "-t"],
+            help = "Tweet's text",
+            defaultValue = ShellOption.NULL
+        ) text: String?,
+    ) {
+        val text = text ?: InputReader.INSTANCE.promptNotEmpty("Please enter the tweet's text", "text")
+        shellHelper.printInfo("Posting tweet with text: $text")
+
+        tweetService.postTweet(text)
     }
 }

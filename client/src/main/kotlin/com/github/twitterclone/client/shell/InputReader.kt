@@ -4,9 +4,27 @@ import org.jline.reader.LineReader
 import org.springframework.util.StringUtils
 
 class InputReader(private val lineReader: LineReader, private val shellHelper: ShellHelper, mask: Char?) {
+
     private val mask: Char
 
     constructor(lineReader: LineReader, shellHelper: ShellHelper) : this(lineReader, shellHelper, null)
+
+    companion object {
+        const val DEFAULT_MASK = '*'
+
+        val INSTANCE
+            get() = INSTANCE_ ?: throw UninitializedPropertyAccessException("property has not been initialized")
+        private var INSTANCE_: InputReader? = null
+    }
+
+    init {
+        if (INSTANCE_ != null) {
+            throw Exception("InputReader INSTANCE is already created!")
+        }
+        this.mask = mask ?: DEFAULT_MASK
+        INSTANCE_ = this
+    }
+
 
     /**
      * Prompts user for input.
@@ -154,13 +172,5 @@ class InputReader(private val lineReader: LineReader, private val shellHelper: S
             if (it.next().equals(s, ignoreCase = true)) return true
         }
         return false
-    }
-
-    companion object {
-        const val DEFAULT_MASK = '*'
-    }
-
-    init {
-        this.mask = mask ?: DEFAULT_MASK
     }
 }

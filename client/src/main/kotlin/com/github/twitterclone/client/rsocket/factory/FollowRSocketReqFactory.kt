@@ -7,7 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class FollowRSocketReqFactory : RSocketReqFactory<FollowHandler, DefaultProperties>() {
-    override fun createHandler(shellHelper: ShellHelper, properties: DefaultProperties): FollowHandler {
+
+    override fun createHandler(
+        shellHelper: ShellHelper,
+        properties: DefaultProperties,
+    ): FollowHandler {
         return FollowHandler(shellHelper, properties)
     }
 }

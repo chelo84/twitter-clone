@@ -63,7 +63,8 @@ class ClientRemoteAuthenticationProvider(
     override fun supports(authentication: Class<*>?): Boolean = true
 
     private fun getPrincipal(token: String): Mono<User> {
-        return defaultRSocketReqFactory.createRSocketRequester()
+        return defaultRSocketReqFactory.get()
+            .rsocketRequester
             .route("profile.user")
             .metadata(
                 BearerTokenMetadata(token),

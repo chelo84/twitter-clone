@@ -7,7 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class TweetRSocketReqFactory : RSocketReqFactory<TweetHandler, TweetProperties>() {
-    override fun createHandler(shellHelper: ShellHelper, properties: TweetProperties): TweetHandler {
+
+    override fun createHandler(
+        shellHelper: ShellHelper,
+        properties: TweetProperties,
+    ): TweetHandler {
         return TweetHandler(shellHelper, properties)
     }
 }

@@ -32,7 +32,7 @@ abstract class RSocketReqFactory<H : Handler<P>, P : HandlerProperties> : Handle
     @Autowired
     private lateinit var shellHelper: ShellHelper
 
-    fun get(): RSocketRequesterWrapper<H>? {
+    open fun get(): RSocketRequesterWrapper<H>? {
         return rsocketRequesterWrapper
     }
 

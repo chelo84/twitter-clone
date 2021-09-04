@@ -1,5 +1,6 @@
 package com.github.twitterclone.server.controller
 
+import com.github.twitterclone.sdk.domain.tweet.NewTweet
 import com.github.twitterclone.sdk.domain.tweet.Tweet
 import com.github.twitterclone.sdk.domain.tweet.TweetQuery
 import com.github.twitterclone.server.config.Log
@@ -50,7 +51,7 @@ class TweetController(
 
 
     @MessageMapping("tweet")
-    fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: Tweet): Mono<Tweet> {
+    fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: NewTweet): Mono<Tweet> {
         return tweetService.newTweet(tweetMapper.newTweetDtoToTweet(tweetDto))
             .map(tweetMapper::tweetToDto)
             .doOnNext { createdTweetDto ->

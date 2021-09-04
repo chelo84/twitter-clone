@@ -1,5 +1,6 @@
 package com.github.twitterclone.server.mapper
 
+import com.github.twitterclone.sdk.domain.tweet.NewTweet
 import com.github.twitterclone.server.model.document.Tweet
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -21,7 +22,7 @@ abstract class TweetMapper {
         Mapping(target = "lastModifiedDate", ignore = true),
         Mapping(target = "hashtags", ignore = true)
     )
-    abstract fun newTweetDtoToTweet(tweetDto: TweetSdk): Tweet
+    abstract fun newTweetDtoToTweet(tweetDto: NewTweet): Tweet
 
     @Mappings(
         Mapping(source = "user.id", target = "user")
