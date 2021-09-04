@@ -7,8 +7,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 
-class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerArgument, Any>) :
-    Handler(shellHelper, args) {
+class FollowHandler(private val shellHelper: ShellHelper, properties: DefaultProperties) :
+    Handler<DefaultProperties>(shellHelper, properties) {
 
     private val follows: Sinks.Many<User> = Sinks.many().multicast().directBestEffort()
     fun getFollows(): Flux<User> = follows.asFlux()
@@ -17,6 +17,7 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
 
     /**
      * Called whenever a user follows the signed-in user
+     *
      * @param user user that followed
      * @see [FollowCommand.follow]
      */
@@ -27,6 +28,7 @@ class FollowHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
 
     /**
      * Called whenever a user unfollows the signed-in user
+     *
      * @param user user that unfollowed
      * @see [FollowCommand.unfollow]
      */

@@ -1,7 +1,5 @@
 package com.github.twitterclone.client.command
 
-import com.github.twitterclone.client.rsocket.RSocketRequesterName
-import com.github.twitterclone.client.rsocket.RSocketRequesterRepository
 import com.github.twitterclone.client.service.FollowService
 import com.github.twitterclone.client.service.UserService
 import com.github.twitterclone.client.shell.InputReader
@@ -23,7 +21,6 @@ class SignCommand(
     private val shellHelper: ShellHelper,
     private val authenticationProvider: AuthenticationProvider,
     private val userService: UserService,
-    private val rsocketRequesterFactory: RSocketRequesterRepository,
     private val followService: FollowService,
 ) {
 
@@ -31,7 +28,7 @@ class SignCommand(
     lateinit var inputReader: InputReader
 
     /**
-     * Sign in with [User.username] and [User.password] to use [SecuredCommand] commands
+     * Sign in with [username] and [password] to use [SecuredCommand] commands
      * @see [User]
      */
     @Suppress("NAME_SHADOWING")
@@ -55,7 +52,7 @@ class SignCommand(
         try {
             val result: Authentication = authenticationProvider.authenticate(request)
             SecurityContextHolder.getContext().authentication = result
-            followService.connectToFollow(result, rsocketRequesterFactory.get(RSocketRequesterName.FOLLOW))
+            followService.connectToFollow(result)
             shellHelper.printSuccess("Credentials successfully authenticated! $username -> welcome")
         } catch (ex: AuthenticationException) {
             shellHelper.printWarning("Authentication failed ${ex.message}")

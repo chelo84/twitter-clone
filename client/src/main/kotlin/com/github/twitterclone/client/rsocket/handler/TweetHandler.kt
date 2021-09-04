@@ -7,23 +7,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 
-class TweetsHandler(private val shellHelper: ShellHelper, args: Map<out HandlerArgument, Any>) :
-    Handler(shellHelper, args) {
+class TweetHandler(private val shellHelper: ShellHelper, properties: TweetProperties) :
+    Handler<TweetProperties>(shellHelper, properties) {
 
-    val username: String
     private val tweets: Sinks.Many<Tweet> = Sinks.many().multicast().directBestEffort()
     fun getTweets(): Flux<Tweet> = tweets.asFlux()
 
-    enum class TweetsArgument(override val value: String) : HandlerArgument {
-        USERNAME("username")
-    }
-
-    init {
-        this.username = args[TweetsArgument.USERNAME] as String? ?: throw Exception("username is required")
-    }
-
     /**
-     * Called whenever the [username] creates a new tweet
+     * Called whenever the [TweetProperties.username] creates a new tweet
      *
      * Adds the new tweet to the [tweets] sink
      * @param tweet: the newly created [Tweet]
@@ -40,3 +31,7 @@ class TweetsHandler(private val shellHelper: ShellHelper, args: Map<out HandlerA
         tweets.tryEmitComplete()
     }
 }
+
+class TweetProperties(
+    val username: String,
+) : HandlerProperties

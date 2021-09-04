@@ -15,7 +15,6 @@ class UserService(
     private val webClient: WebClient,
     private val shellHelper: ShellHelper,
 ) {
-
     fun signUp(newUser: NewUser) {
         webClient.post()
             .uri("/signup")

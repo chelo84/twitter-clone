@@ -1,7 +1,7 @@
 package com.github.twitterclone.client.security
 
-import com.github.twitterclone.client.rsocket.RSocketRequesterFactory
-import com.github.twitterclone.client.rsocket.RSocketRequesterRepository
+import com.github.twitterclone.client.rsocket.factory.DefaultRSocketReqFactory
+import com.github.twitterclone.client.rsocket.factory.RSocketReqFactoryRepository
 import com.github.twitterclone.sdk.domain.user.User
 import io.rsocket.metadata.WellKnownMimeType
 import org.springframework.http.HttpHeaders
@@ -19,8 +19,8 @@ import reactor.util.function.Tuple2
 
 class ClientRemoteAuthenticationProvider(
     private val webClient: WebClient,
-    private val rSocketRequesterFactory: RSocketRequesterFactory,
-    private val rSocketRequesterRepository: RSocketRequesterRepository,
+    private val defaultRSocketReqFactory: DefaultRSocketReqFactory,
+    private val rsocketReqFactoryRepository: RSocketReqFactoryRepository,
 ) : AuthenticationProvider {
 
     @Throws(AuthenticationException::class)
@@ -55,7 +55,7 @@ class ClientRemoteAuthenticationProvider(
                 )
             }
             .switchIfEmpty(Mono.error(Exception("empty")))
-            .doOnSuccess { rSocketRequesterRepository.disposeAll() }
+            .doOnSuccess { rsocketReqFactoryRepository.disposeAll() }
             .onErrorResume { e -> Mono.error(BadCredentialsException(e.message)) }
             .block()!!
     }
@@ -63,7 +63,7 @@ class ClientRemoteAuthenticationProvider(
     override fun supports(authentication: Class<*>?): Boolean = true
 
     private fun getPrincipal(token: String): Mono<User> {
-        return rSocketRequesterFactory.createRSocketRequester()
+        return defaultRSocketReqFactory.createRSocketRequester()
             .route("profile.user")
             .metadata(
                 BearerTokenMetadata(token),

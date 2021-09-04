@@ -1,7 +1,7 @@
 package com.github.twitterclone.client.service
 
-import com.github.twitterclone.client.rsocket.RSocketRequesterWrapper
-import com.github.twitterclone.client.rsocket.handler.FollowHandler
+import com.github.twitterclone.client.rsocket.factory.FollowRSocketReqFactory
+import com.github.twitterclone.client.rsocket.handler.DefaultProperties
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.follow.Follow
 import io.rsocket.metadata.WellKnownMimeType
@@ -16,16 +16,16 @@ import reactor.kotlin.core.publisher.toMono
 @Service
 class FollowService(
     private val shellHelper: ShellHelper,
+    private val followRSocketReqFactory: FollowRSocketReqFactory,
 ) {
 
     /**
      * Observe new follows and unfollows to the signed-in user
      */
-    fun connectToFollow(
-        authentication: Authentication,
-        rsocketRequesterWrapper: RSocketRequesterWrapper,
-    ) {
-        rsocketRequesterWrapper.rsocketRequester
+    fun connectToFollow(authentication: Authentication) {
+        val rsocketRequesterWrapper = followRSocketReqFactory.getOrCreate(DefaultProperties())
+        rsocketRequesterWrapper
+            .rsocketRequester
             .route("follow")
             .metadata(
                 BearerTokenMetadata(authentication.credentials as String),
@@ -33,7 +33,7 @@ class FollowService(
             )
             .sendMetadata()
             .doOnSuccess {
-                val handler = rsocketRequesterWrapper.handler as FollowHandler
+                val handler = rsocketRequesterWrapper.handler
                 handler.getFollows()
                     .subscribe { user ->
                         shellHelper.printWarning("User <${user.username}> just followed you!!", above = true)
@@ -46,11 +46,9 @@ class FollowService(
             .subscribe()
     }
 
-    fun follow(
-        username: String,
-        rsocketRequesterWrapper: RSocketRequesterWrapper,
-    ) {
-        rsocketRequesterWrapper.rsocketRequester
+    fun follow(username: String) {
+        followRSocketReqFactory.getOrCreate(DefaultProperties())
+            .rsocketRequester
             .route("follow")
             .metadata(
                 BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),
@@ -69,11 +67,9 @@ class FollowService(
             .subscribe()
     }
 
-    fun unfollow(
-        username: String,
-        rsocketRequesterWrapper: RSocketRequesterWrapper,
-    ) {
-        rsocketRequesterWrapper.rsocketRequester
+    fun unfollow(username: String) {
+        followRSocketReqFactory.getOrCreate(DefaultProperties())
+            .rsocketRequester
             .route("unfollow")
             .metadata(
                 BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),

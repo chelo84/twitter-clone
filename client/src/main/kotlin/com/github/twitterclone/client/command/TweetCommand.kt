@@ -1,8 +1,6 @@
 package com.github.twitterclone.client.command
 
-import com.github.twitterclone.client.rsocket.RSocketRequesterName
-import com.github.twitterclone.client.rsocket.RSocketRequesterRepository
-import com.github.twitterclone.client.rsocket.handler.TweetsHandler
+import com.github.twitterclone.client.rsocket.factory.TweetRSocketReqFactory
 import com.github.twitterclone.client.service.TweetService
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.client.state.TweetState
@@ -15,8 +13,8 @@ import org.springframework.shell.standard.ShellOption
 @ShellComponent
 class TweetCommand(
     private val shellHelper: ShellHelper,
-    private val rsocketRequesterRepository: RSocketRequesterRepository,
     private val tweetService: TweetService,
+    private val tweetRSocketReqFactory: TweetRSocketReqFactory,
     private val tweetState: TweetState,
 ) : SecuredCommand() {
 
@@ -38,20 +36,13 @@ class TweetCommand(
         ) more: Boolean,
     ) {
         shellHelper.printInfo("Getting tweets from $username (more? $more)...")
-
         username?.also {
-            val handler = rsocketRequesterRepository.getHandler(RSocketRequesterName.TWEETS) as TweetsHandler?
-            if (handler?.username != username) {
+            if (tweetService.isConnectedToUser(it).not()) {
                 shellHelper.printWarning("username not equals")
-                tweetService.connectToTweets(
-                    username,
-                    rsocketRequesterRepository.disposeAndCreate(RSocketRequesterName.TWEETS,
-                                                                mapOf(Pair(TweetsHandler.TweetsArgument.USERNAME,
-                                                                           username)))
-                )
+                tweetService.connectToTweets(username)
             }
         } ?: run {
-            rsocketRequesterRepository.dispose(RSocketRequesterName.TWEETS)
+            tweetRSocketReqFactory.dispose()
         }
 
         shellHelper.printInfo("... Find tweets ...")
