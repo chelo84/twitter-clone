@@ -6,12 +6,14 @@ import com.github.twitterclone.client.rsocket.handler.TweetProperties
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.sdk.domain.tweet.NewTweet
 import com.github.twitterclone.sdk.domain.tweet.Tweet
+import com.github.twitterclone.sdk.domain.tweet.TweetQuery
 import com.github.twitterclone.sdk.domain.user.User
 import io.rsocket.metadata.WellKnownMimeType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeTypeUtils
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
@@ -23,12 +25,13 @@ class TweetService(
 ) {
     /**
      * Observe new tweets from a [username]
+     *
      * @param username [User.username]
      */
-    fun connectToTweets(username: String) {
+    fun connectToTweets(username: String): Mono<Void> {
         shellHelper.printInfo("Subscribing to tweets from user $username")
         val rsocketRequesterWrapper = tweetRSocketReqFactory.disposeAndCreate(TweetProperties(username))
-        rsocketRequesterWrapper
+        return rsocketRequesterWrapper
             .rsocketRequester
             .route("tweets.$username")
             .metadata(
@@ -40,12 +43,11 @@ class TweetService(
                 val handler = rsocketRequesterWrapper.handler
                 handler.getTweets()
                     .subscribe { tweet ->
-                        shellHelper.printWarning("User <${tweet.user?.username}> tweeted: ${tweet.text}",
+                        shellHelper.printWarning("User <${tweet.user.username}> tweeted: ${tweet.text}",
                                                  above = true)
                     }
             }
             .onErrorResume { shellHelper.printError("Couldn't unfollow: ${it.message}", above = true).toMono().then() }
-            .subscribe()
     }
 
     fun isConnectedToUser(username: String): Boolean {
@@ -68,5 +70,23 @@ class TweetService(
                     .then(Mono.empty())
             }
             .subscribe()
+    }
+
+    fun fetchTweets(username: String, page: Int): Flux<Tweet> {
+        return defaultRSocketReqFactory.get()
+            .rsocketRequester
+            .route("tweets")
+            .metadata(
+                BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),
+                MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
+            )
+            .data(
+                TweetQuery(
+                    username = username,
+                    page = page,
+                    size = 10
+                )
+            )
+            .retrieveFlux(Tweet::class.java)
     }
 }

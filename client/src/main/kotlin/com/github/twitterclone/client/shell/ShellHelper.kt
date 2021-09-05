@@ -2,6 +2,7 @@ package com.github.twitterclone.client.shell
 
 import org.jline.reader.impl.LineReaderImpl
 import org.jline.terminal.Terminal
+import org.jline.utils.AttributedString
 import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.AttributedStyle
 import org.springframework.beans.factory.annotation.Value
@@ -29,25 +30,26 @@ class ShellHelper(
      * @param color   color to print
      * @return colored message
      */
-    fun getColored(message: String?, color: PromptColor): String {
+    fun getColored(message: String?, color: PromptColor): AttributedString {
         return AttributedStringBuilder()
-            .append(message, AttributedStyle.DEFAULT.foreground(color.toJlineAttributedStyle())).toAnsi()
+            .append(message, AttributedStyle.DEFAULT.foreground(color.toJlineAttributedStyle()))
+            .toAttributedString()
     }
 
     fun getInfoMessage(message: String?): String {
-        return getColored(message, PromptColor.valueOf(infoColor!!))
+        return getColored(message, PromptColor.valueOf(infoColor!!)).toAnsi()
     }
 
     fun getSuccessMessage(message: String?): String {
-        return getColored(message, PromptColor.valueOf(successColor!!))
+        return getColored(message, PromptColor.valueOf(successColor!!)).toAnsi()
     }
 
     fun getWarningMessage(message: String?): String {
-        return getColored(message, PromptColor.valueOf(warningColor!!))
+        return getColored(message, PromptColor.valueOf(warningColor!!)).toAnsi()
     }
 
     fun getErrorMessage(message: String?): String {
-        return getColored(message, PromptColor.valueOf(errorColor!!))
+        return getColored(message, PromptColor.valueOf(errorColor!!)).toAnsi()
     }
 
     fun printSuccess(message: String?, above: Boolean = false) {
@@ -69,7 +71,7 @@ class ShellHelper(
     fun print(message: String?, color: PromptColor? = null, above: Boolean = false) {
         var toPrint = message
         color?.let {
-            toPrint = getColored(message, color)
+            toPrint = getColored(message, color).toAnsi()
         }
 
         if (above) {

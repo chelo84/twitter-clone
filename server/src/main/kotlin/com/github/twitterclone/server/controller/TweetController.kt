@@ -55,7 +55,7 @@ class TweetController(
         return tweetService.newTweet(tweetMapper.newTweetDtoToTweet(tweetDto))
             .map(tweetMapper::tweetToDto)
             .doOnNext { createdTweetDto ->
-                requesterMap[createdTweetDto.user?.username]?.forEach { rSocketRequester ->
+                requesterMap[createdTweetDto.user.username]?.forEach { rSocketRequester ->
                     rSocketRequester.route("tweet")
                         .data(createdTweetDto)
                         .send()

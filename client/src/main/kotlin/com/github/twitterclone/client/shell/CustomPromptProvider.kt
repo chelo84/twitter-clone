@@ -16,6 +16,8 @@ class CustomPromptProvider : SecuredCommand(), PromptProvider {
         if (isUserSignedIn().isAvailable) {
             val principal = SecurityContextHolder.getContext().authentication.principal as User
             builder.append(principal.username, AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN))
+        } else {
+            builder.append("unassigned", AttributedStyle.DEFAULT.foreground(AttributedStyle.RED))
         }
 
         return builder.append("> ").toAttributedString()

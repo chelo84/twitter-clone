@@ -8,12 +8,12 @@ abstract class UserInfo {
     lateinit var email: String
 
     companion object {
-        private val GOOGLE: String = "google".toLowerCase()
-        private val GITHUB: String = "github".toLowerCase()
-        private val FACEBOOK: String = "facebook".toLowerCase()
+        private val GOOGLE: String = "google".lowercase()
+        private val GITHUB: String = "github".lowercase()
+        private val FACEBOOK: String = "facebook".lowercase()
 
         fun from(registrationId: String, oAuth2User: OAuth2User): UserInfo {
-            return when (registrationId.toLowerCase()) {
+            return when (registrationId.lowercase()) {
                 GOOGLE -> GoogleUserInfo(oAuth2User.attributes)
                 FACEBOOK -> FacebookUserInfo(oAuth2User.attributes)
                 GITHUB -> GithubUserInfo(oAuth2User.attributes)

@@ -4,27 +4,20 @@ import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
 
-class NewUser(
-    var id: String? = null,
-
+data class NewUser(
     @NotBlank
     @Size(max = 100)
-    var username: String? = null,
-
+    val username: String,
     @NotBlank
-    var password: String? = null,
-
+    val password: String,
     @NotBlank
-    var passwordConfirmation: String? = null,
-
+    val passwordConfirmation: String,
     @NotBlank
     @Size(max = 100)
-    var name: String? = null,
-
+    val name: String,
     @NotBlank
     @Size(max = 100)
-    var surname: String? = null,
-
+    val surname: String,
     @Email
-    var email: String? = null,
+    val email: String,
 )

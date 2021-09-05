@@ -17,6 +17,7 @@ abstract class TweetMapper {
     abstract fun tweetToDto(tweet: Tweet): TweetSdk
 
     @Mappings(
+        Mapping(target = "uid", ignore = true),
         Mapping(target = "user", ignore = true),
         Mapping(target = "createdDate", ignore = true),
         Mapping(target = "lastModifiedDate", ignore = true),

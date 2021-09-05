@@ -5,7 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
     kotlin("jvm") version "1.4.10"
     kotlin("plugin.spring") version "1.4.10"
-    kotlin("kapt") version "1.3.72"
+    kotlin("kapt") version "1.5.10"
 }
 
 group = "com.github"
@@ -28,8 +28,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.mapstruct:mapstruct-jdk8:1.3.1.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.3.1.Final")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.mapstruct:mapstruct:1.5.0.Beta1")
+    kapt("org.mapstruct:mapstruct-processor:1.5.0.Beta1")
     implementation("org.springframework.boot:spring-boot-starter-rsocket")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.security:spring-security-messaging")

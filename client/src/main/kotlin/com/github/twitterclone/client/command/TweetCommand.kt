@@ -3,12 +3,18 @@ package com.github.twitterclone.client.command
 import com.github.twitterclone.client.rsocket.factory.TweetRSocketReqFactory
 import com.github.twitterclone.client.service.TweetService
 import com.github.twitterclone.client.shell.InputReader
+import com.github.twitterclone.client.shell.PromptColor
 import com.github.twitterclone.client.shell.ShellHelper
 import com.github.twitterclone.client.state.TweetState
 import com.github.twitterclone.sdk.domain.user.User
+import org.jline.utils.AttributedStringBuilder
+import org.jline.utils.AttributedStyle
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.shell.standard.ShellComponent
 import org.springframework.shell.standard.ShellMethod
 import org.springframework.shell.standard.ShellOption
+import reactor.core.publisher.Flux
+import java.time.format.DateTimeFormatter
 
 
 @ShellComponent
@@ -32,21 +38,53 @@ class TweetCommand(
             defaultValue = ShellOption.NULL
         ) username: String?,
         @ShellOption(
-            value = ["--more", "-m"],
+            value = ["--more", "-m", "more"],
             help = "Used to search for more tweets from the user (ignored if username is present)"
         ) more: Boolean,
     ) {
-        shellHelper.printInfo("Getting tweets from $username (more? $more)...")
-        username?.also {
-            if (tweetService.isConnectedToUser(it).not()) {
-                shellHelper.printWarning("username not equals")
-                tweetService.connectToTweets(username)
+        if (more.not()) {
+            username?.also {
+                if (tweetService.isConnectedToUser(it).not()) {
+                    shellHelper.printWarning("username not equals")
+                    tweetService.connectToTweets(username)
+                        .doOnSuccess {
+                            tweetState.currentPage = 0
+                        }
+                        .block()
+                }
+            } ?: run {
+                tweetRSocketReqFactory.dispose()
+                tweetState.currentPage = 0
             }
-        } ?: run {
-            tweetRSocketReqFactory.dispose()
         }
 
-        shellHelper.printInfo("... Find tweets ...")
+        if (more || tweetState.currentPage == 0) {
+            val principal = SecurityContextHolder.getContext().authentication.principal as User
+
+            tweetService.fetchTweets(username ?: principal.username, tweetState.currentPage)
+                .switchIfEmpty {
+                    val builder: AttributedStringBuilder =
+                        AttributedStringBuilder().append("No tweets found", AttributedStyle.BOLD)
+                    shellHelper.print(builder.toAnsi(), above = true)
+                }
+                .doOnNext { tweet ->
+                    val builder: AttributedStringBuilder = AttributedStringBuilder()
+                        .append(shellHelper.getColored(tweet.createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                                                       PromptColor.MAGENTA))
+                        .append(" - ")
+                        .append(shellHelper.getColored(tweet.user.username, PromptColor.RED))
+                        .append(": ")
+                        .append(tweet.text)
+
+                    shellHelper.print(builder.toAnsi(), above = true)
+                }
+                .onErrorResume {
+                    shellHelper.printError("Error while fetching tweets: ${it.message}", above = true)
+                    Flux.empty()
+                }
+                .doOnComplete { tweetState.currentPage++ }
+                .subscribe()
+        }
     }
 
     @Suppress("NAME_SHADOWING")
@@ -59,8 +97,6 @@ class TweetCommand(
         ) text: String?,
     ) {
         val text = text ?: InputReader.INSTANCE.promptNotEmpty("Please enter the tweet's text", "text")
-        shellHelper.printInfo("Posting tweet with text: $text")
-
         tweetService.postTweet(text)
     }
 }

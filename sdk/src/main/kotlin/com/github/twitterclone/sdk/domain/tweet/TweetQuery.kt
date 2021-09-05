@@ -4,7 +4,7 @@ import com.github.twitterclone.sdk.domain.Query
 import javax.validation.constraints.NotBlank
 
 class TweetQuery(
-    @field:NotBlank
+    @NotBlank
     val username: String,
     page: Int,
     size: Int,
