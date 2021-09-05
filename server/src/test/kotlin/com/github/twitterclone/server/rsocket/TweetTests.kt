@@ -52,8 +52,8 @@ class TweetTests : TwitterCloneTests() {
         Assertions.assertNotNull(newTweet.hashtags)
         Assertions.assertTrue { newTweet.hashtags.size == 2 }
         Assertions.assertTrue {
-            hashtags.contains(newTweet.hashtags[0]) &&
-                    hashtags.contains(newTweet.hashtags[1])
+            hashtags.contains(newTweet.hashtags[0].hashtag) &&
+                    hashtags.contains(newTweet.hashtags[1].hashtag)
         }
     }
 

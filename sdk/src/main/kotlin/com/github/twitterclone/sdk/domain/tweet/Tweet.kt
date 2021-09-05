@@ -11,5 +11,5 @@ class Tweet(
     val createdDate: LocalDateTime,
     val lastModifiedDate: LocalDateTime?,
     val user: User,
-    val hashtags: List<String> = listOf(),
+    val hashtags: List<Hashtag> = listOf(),
 )

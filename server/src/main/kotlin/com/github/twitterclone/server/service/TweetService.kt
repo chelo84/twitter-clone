@@ -19,7 +19,7 @@ class TweetService(
             .collectList()
             .flatMap { hashtags ->
                 tweetRepository.save(
-                    tweet.apply { this.hashtags = hashtags.map { it.hashtag } }
+                    tweet.apply { this.hashtags = hashtags }
                 )
             }
     }

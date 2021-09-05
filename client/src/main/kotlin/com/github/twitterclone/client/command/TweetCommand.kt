@@ -68,13 +68,23 @@ class TweetCommand(
                     shellHelper.print(builder.toAnsi(), above = true)
                 }
                 .doOnNext { tweet ->
+                    val text = StringBuilder(tweet.text)
+                    tweet.hashtags.forEach { hashtag ->
+                        val indexOf = text.indexOf(hashtag.hashtag)
+                        text.replace(
+                            indexOf,
+                            indexOf + hashtag.hashtag.length,
+                            shellHelper.getColored(hashtag.hashtag, PromptColor.BLUE).toAnsi()
+                        )
+                    }
+
                     val builder: AttributedStringBuilder = AttributedStringBuilder()
                         .append(shellHelper.getColored(tweet.createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                                                        PromptColor.MAGENTA))
                         .append(" - ")
                         .append(shellHelper.getColored(tweet.user.username, PromptColor.RED))
                         .append(": ")
-                        .append(tweet.text)
+                        .append(text)
 
                     shellHelper.print(builder.toAnsi(), above = true)
                 }

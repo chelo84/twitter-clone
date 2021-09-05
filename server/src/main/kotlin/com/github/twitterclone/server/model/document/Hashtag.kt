@@ -1,14 +1,13 @@
 package com.github.twitterclone.server.model.document
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
-import javax.validation.constraints.NotNull
+import javax.validation.constraints.PositiveOrZero
 
 @Document
-class Hashtag(
-    @Id
-    @NotNull
-    @Indexed(unique = true)
+data class Hashtag(
     val hashtag: String,
+    @PositiveOrZero
+    val startsAt: Int,
+    @PositiveOrZero
+    val endsAt: Int,
 )

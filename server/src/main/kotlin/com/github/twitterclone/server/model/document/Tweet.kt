@@ -29,5 +29,5 @@ class Tweet {
     @CreatedBy
     var user: String? = null
 
-    var hashtags: List<String> = listOf()
+    var hashtags: List<Hashtag> = listOf()
 }
