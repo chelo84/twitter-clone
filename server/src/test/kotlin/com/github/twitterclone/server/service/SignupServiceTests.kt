@@ -1,7 +1,6 @@
 package com.github.twitterclone.server.service
 
 import com.github.twitterclone.sdk.domain.user.NewUser
-import com.github.twitterclone.sdk.domain.user.User
 import com.github.twitterclone.server.exception.UserAlreadyExistsException
 import com.github.twitterclone.server.mapper.UserMapper
 import com.github.twitterclone.server.rsocket.TwitterCloneTests
@@ -19,13 +18,15 @@ import reactor.test.StepVerifier
 class SignupServiceTests : TwitterCloneTests() {
     companion object {
         fun createFakeUserDto(): NewUser {
-            val fakeUserDto = NewUser()
-            fakeUserDto.name = podamFactory.manufacturePojo(String::class.java)
-            fakeUserDto.username = podamFactory.manufacturePojo(String::class.java)
-            fakeUserDto.password = podamFactory.manufacturePojo(String::class.java)
-            fakeUserDto.passwordConfirmation = fakeUserDto.password
-            fakeUserDto.email = podamFactory.manufacturePojo(String::class.java)
-            return fakeUserDto
+            val password = podamFactory.manufacturePojo(String::class.java)
+            return NewUser(
+                name = podamFactory.manufacturePojo(String::class.java),
+                surname = podamFactory.manufacturePojo(String::class.java),
+                username = podamFactory.manufacturePojo(String::class.java),
+                password = password,
+                passwordConfirmation = password,
+                email = podamFactory.manufacturePojo(String::class.java)
+            )
         }
     }
 
@@ -42,19 +43,19 @@ class SignupServiceTests : TwitterCloneTests() {
     @Test
     fun `Should create a new user`() {
         // given
-        val fakeUser = userMapper.newUserToUser(createFakeUserDto())
+        val fakeNewUser = createFakeUserDto()
 
         // when
-        val createdUser = signupService.signup(fakeUser).block()
+        val createdUser = signupService.signup(userMapper.newUserToUser(fakeNewUser)).block()
 
         // then
         Assertions.assertNotNull(createdUser)
         createdUser!!
         Assertions.assertNotNull(createdUser.createdDate)
         Assertions.assertNotNull(createdUser.lastModifiedDate)
-        Assertions.assertEquals(fakeUser.username, createdUser.username)
-        Assertions.assertTrue(passwordEncoder.matches(fakeUser.password, createdUser.password))
-        Assertions.assertEquals(fakeUser.email, createdUser.email)
+        Assertions.assertEquals(fakeNewUser.username, createdUser.username)
+        Assertions.assertTrue(passwordEncoder.matches(fakeNewUser.password, createdUser.password))
+        Assertions.assertEquals(fakeNewUser.email, createdUser.email)
     }
 
     @Test

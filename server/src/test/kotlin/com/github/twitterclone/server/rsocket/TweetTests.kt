@@ -1,5 +1,6 @@
 package com.github.twitterclone.server.rsocket
 
+import com.github.twitterclone.sdk.domain.tweet.NewTweet
 import com.github.twitterclone.sdk.domain.tweet.Tweet
 import com.github.twitterclone.sdk.domain.tweet.TweetQuery
 import com.github.twitterclone.server.config.Log
@@ -20,11 +21,7 @@ import reactor.test.StepVerifier
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TweetTests : TwitterCloneTests() {
     companion object : Log() {
-        fun fakeTweetDto(): Tweet {
-            return Tweet().apply {
-                this.text = podamFactory.manufacturePojo(String::class.java)
-            }
-        }
+        fun fakeTweetDto(): NewTweet = NewTweet(podamFactory.manufacturePojo(String::class.java))
     }
 
     @Autowired
@@ -33,8 +30,7 @@ class TweetTests : TwitterCloneTests() {
     @Test
     fun `Should create a new tweet`() {
         // given
-        val tweetDto = fakeTweetDto()
-        tweetDto.text = "tweet with 2 #hashtags #second :)"
+        val tweetDto = NewTweet("tweet with 2 #hashtags #second :)")
         val hashtags = listOf("#hashtags", "#second")
 
         // when
@@ -73,7 +69,7 @@ class TweetTests : TwitterCloneTests() {
                 BearerTokenMetadata(fakeAuthentication.token),
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
-            .data(TweetQuery(fakeTweet.user!!.username!!, 0, 20))
+            .data(TweetQuery(fakeTweet.user.username, 0, 20))
             .retrieveFlux(Tweet::class.java)
 
         // then
@@ -95,7 +91,7 @@ class TweetTests : TwitterCloneTests() {
                 BearerTokenMetadata(fakeAuthentication.token),
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
-            .data(TweetQuery(firstTweet.user!!.username!!, 0, 1))
+            .data(TweetQuery(firstTweet.user.username, 0, 1))
             .retrieveFlux(Tweet::class.java)
 
         val pageTwo = createRSocketRequester()
@@ -104,7 +100,7 @@ class TweetTests : TwitterCloneTests() {
                 BearerTokenMetadata(fakeAuthentication.token),
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
-            .data(TweetQuery(firstTweet.user!!.username!!, 1, 1))
+            .data(TweetQuery(firstTweet.user.username, 1, 1))
             .retrieveFlux(Tweet::class.java)
 
         // then
