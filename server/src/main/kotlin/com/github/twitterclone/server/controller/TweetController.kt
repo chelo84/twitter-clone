@@ -52,7 +52,7 @@ class TweetController(
 
     @MessageMapping("tweet")
     fun newTweet(@AuthenticationPrincipal principal: User, tweetDto: NewTweet): Mono<Tweet> {
-        return tweetService.newTweet(principal, tweetMapper.newTweetDtoToTweet(tweetDto), tweetDto.replyTo)
+        return tweetService.newTweet(principal, tweetMapper.newTweetDtoToTweet(tweetDto))
             .map(tweetMapper::tweetToDto)
             .doOnNext { createdTweetDto ->
                 requesterMap[createdTweetDto.user.username]?.forEach { rSocketRequester ->

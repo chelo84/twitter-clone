@@ -45,9 +45,11 @@ class TweetCommand(
         if (more.not()) {
             username?.also {
                 shellHelper.printWarning("username not equals")
-                tweetService.connectToTweets(username)
-                    .doOnSuccess { tweetState.reset(username) }
-                    .block()
+                if (tweetService.isConnectedToUser(username).not()) {
+                    tweetService.connectToTweets(username)
+                        .doOnSuccess { tweetState.reset(username) }
+                        .block()
+                }
             } ?: run {
                 tweetRSocketReqFactory.dispose()
                 tweetState.reset(principal.username)
@@ -61,7 +63,11 @@ class TweetCommand(
                 shellHelper.print(builder.toAnsi(), above = true)
             }
             .doOnNext { tweet ->
-                shellHelper.print(tweetService.getTweetToPrint(tweet).toAnsi(), above = true)
+                tweetService.getTweetToPrint(tweet)
+                    .doOnNext { text ->
+                        shellHelper.print(text.toAnsi(), above = true)
+                    }
+                    .subscribe()
             }
             .onErrorResume {
                 shellHelper.printError("Error while fetching tweets: ${it.message}", above = true)

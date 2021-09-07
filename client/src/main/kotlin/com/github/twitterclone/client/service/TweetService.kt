@@ -5,6 +5,7 @@ import com.github.twitterclone.client.rsocket.factory.TweetRSocketReqFactory
 import com.github.twitterclone.client.rsocket.handler.TweetProperties
 import com.github.twitterclone.client.shell.PromptColor
 import com.github.twitterclone.client.shell.ShellHelper
+import com.github.twitterclone.client.shell.UnicodeCharacter
 import com.github.twitterclone.client.util.TemporalUtils
 import com.github.twitterclone.sdk.domain.tweet.NewTweet
 import com.github.twitterclone.sdk.domain.tweet.Tweet
@@ -18,6 +19,7 @@ import org.springframework.security.rsocket.metadata.BearerTokenMetadata
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeTypeUtils
 import reactor.core.publisher.Flux
+import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.format.DateTimeFormatter
@@ -49,11 +51,12 @@ class TweetService(
                 handler.getTweets()
                     .subscribe { tweet ->
                         if (tweet.replyTo == null) {
-                            shellHelper.print("${
-                                shellHelper.getColored("NEW TWEET", PromptColor.YELLOW).toAnsi()
-                            } -> ${getTweetToPrint(tweet).toAnsi()}", above = true)
-                        } else {
-                            // TODO
+                            getTweetToPrint(tweet).next()
+                                .subscribe { text ->
+                                    shellHelper.print("${
+                                        shellHelper.getColored("NEW TWEET", PromptColor.YELLOW).toAnsi()
+                                    } ${UnicodeCharacter.ARROW_RIGHT} ${text.toAnsi()}", above = true)
+                                }
                         }
                     }
             }
@@ -94,14 +97,30 @@ class TweetService(
                 TweetQuery(
                     username = username,
                     page = page,
-                    size = 10
+                    size = 5
                 )
             )
             .retrieveFlux(Tweet::class.java)
             .sort(Comparator.comparing(Tweet::createdDate))
     }
 
-    fun getTweetToPrint(tweet: Tweet): AttributedString {
+    fun getTweetToPrint(tweet: Tweet): Flux<AttributedString> {
+        return Flux.create { sink ->
+            sink.next(this.doGetTweetToPrint(tweet).toAttributedString())
+
+            this.addRepliesToSink(tweet, sink, tabs = 1)
+        }
+    }
+
+    private fun addRepliesToSink(tweet: Tweet, sink: FluxSink<AttributedString>, tabs: Int) {
+        return tweet.replies.forEach {
+            sink.next(this.doGetTweetToPrint(it, tabs = tabs).toAttributedString())
+
+            this.addRepliesToSink(it, sink, tabs = tabs + 1)
+        }
+    }
+
+    private fun doGetTweetToPrint(tweet: Tweet, tabs: Int = 0): AttributedStringBuilder {
         val text = StringBuilder(tweet.text)
         tweet.hashtags.forEach { hashtag ->
             val indexOf = text.indexOf(hashtag.hashtag)
@@ -113,6 +132,13 @@ class TweetService(
         }
 
         return AttributedStringBuilder()
+            .append(" ".repeat(5 * tabs))
+            .append("${
+                if (tabs == 0)
+                    UnicodeCharacter.ARROW_RIGHT.char
+                else
+                    UnicodeCharacter.ARROW_DOWN_TO_RIGHT.char
+            }").append(" ")
             .append(shellHelper.getColored(TemporalUtils.toSystemZone(tweet.createdDate)
                                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                                            PromptColor.MAGENTA))
@@ -121,6 +147,5 @@ class TweetService(
             .append(": ")
             .append(text)
             .append(" (").append(shellHelper.getColored(tweet.uid, PromptColor.YELLOW).toAnsi()).append(")")
-            .toAttributedString()
     }
 }
