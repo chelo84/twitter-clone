@@ -48,9 +48,13 @@ class TweetService(
                 val handler = rsocketRequesterWrapper.handler
                 handler.getTweets()
                     .subscribe { tweet ->
-                        shellHelper.print("${
-                            shellHelper.getColored("NEW TWEET", PromptColor.YELLOW).toAnsi()
-                        } -> ${getTweetToPrint(tweet).toAnsi()}", above = true)
+                        if (tweet.replyTo == null) {
+                            shellHelper.print("${
+                                shellHelper.getColored("NEW TWEET", PromptColor.YELLOW).toAnsi()
+                            } -> ${getTweetToPrint(tweet).toAnsi()}", above = true)
+                        } else {
+                            // TODO
+                        }
                     }
             }
             .onErrorResume { shellHelper.printError("Couldn't unfollow: ${it.message}", above = true).toMono().then() }
@@ -60,7 +64,7 @@ class TweetService(
         return tweetRSocketReqFactory.getHandler()?.let { it.properties.username == username } ?: false
     }
 
-    fun postTweet(text: String) {
+    fun postTweet(text: String, replyTo: String?) {
         defaultRSocketReqFactory.get()
             .rsocketRequester
             .route("tweet")
@@ -68,7 +72,7 @@ class TweetService(
                 BearerTokenMetadata(SecurityContextHolder.getContext().authentication.credentials as String),
                 MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.string)
             )
-            .data(NewTweet(text))
+            .data(NewTweet(text = text, replyTo = replyTo))
             .retrieveMono(Tweet::class.java)
             .doOnSuccess { shellHelper.printSuccess("Successfully posted new tweet!", above = true) }
             .onErrorResume {
@@ -116,6 +120,7 @@ class TweetService(
             .append(shellHelper.getColored(tweet.user.username, PromptColor.RED))
             .append(": ")
             .append(text)
+            .append(" (").append(shellHelper.getColored(tweet.uid, PromptColor.YELLOW).toAnsi()).append(")")
             .toAttributedString()
     }
 }

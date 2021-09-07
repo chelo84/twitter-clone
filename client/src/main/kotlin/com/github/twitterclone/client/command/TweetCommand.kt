@@ -81,8 +81,13 @@ class TweetCommand(
             help = "Tweet's text",
             defaultValue = ShellOption.NULL
         ) text: String?,
+        @ShellOption(
+            value = ["--reply", "-r"],
+            help = "Reply to a tweet (with its ID)",
+            defaultValue = ShellOption.NULL
+        ) replyTo: String?,
     ) {
         val text = text ?: InputReader.INSTANCE.promptNotEmpty("Please enter the tweet's text", "text")
-        tweetService.postTweet(text)
+        tweetService.postTweet(text, replyTo)
     }
 }

@@ -11,4 +11,6 @@ import reactor.core.publisher.Flux
 interface TweetRepository : ReactiveMongoRepository<Tweet, String>, ReactiveSortingRepository<Tweet, String> {
 
     fun findAllByUserOrderByCreatedDateDesc(user: String, pageable: Pageable): Flux<Tweet>
+
+    fun findAllByUidLike(id: String): Flux<Tweet>
 }
