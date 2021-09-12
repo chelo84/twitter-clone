@@ -55,7 +55,7 @@ class TweetService(
                                 .subscribe { text ->
                                     shellHelper.print("${
                                         shellHelper.getColored("NEW TWEET", PromptColor.YELLOW).toAnsi()
-                                    } ${UnicodeCharacter.ARROW_RIGHT} ${text.toAnsi()}", above = true)
+                                    } ${text.toAnsi()}", above = true)
                                 }
                         }
                     }
